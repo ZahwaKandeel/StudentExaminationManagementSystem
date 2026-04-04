@@ -1,5 +1,3 @@
-# StudentExaminationManagementSystem
-
 # Student Examination Management System
 
 A PostgreSQL-based system to manage exams, question banks, student answers, grading, and reporting across ITI departments/tracks/courses. All business logic lives in PL/pgSQL stored procedures — no direct table access from clients.
