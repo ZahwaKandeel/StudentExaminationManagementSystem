@@ -124,3 +124,4 @@ psql -U postgres -d exam_db < scripts/backup.sql
 - Final merge to main, tag release, LinkedIn post
 
 ---
+
