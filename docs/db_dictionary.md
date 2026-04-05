@@ -223,3 +223,139 @@ supporting MCQ (4 choices) and True/False types.
 
 - Composite PK `(instructorid, courseid)` prevents duplicate assignments
 - `ON DELETE CASCADE` on both FKs cleans up assignment rows automatically when an instructor or course is deleted
+
+---
+
+### Table: `Course`
+
+**Purpose:** Stores information about courses including their names and grading.
+**Owner:** Zahwa Kandeel
+**Schema file:** schema/01_org.sql
+
+#### Columns
+
+| Column    | Type   | Nullable | Default | Collation | Description                                               |
+| --------- | ------ | -------- | ------- | --------- | --------------------------------------------------------- |
+| CourseID  | SERIAL | NO       | auto    | —         | Primary key, auto-incremented Course identifier           |
+| CourseName| TEXT   | NO       | —       | —         | Name of the course                                        |
+| MinDegree | INT    | NO       | —       | —         | Minimum degree allowed for the course                     |
+| MaxDegree | INT    | NO       | —       | —         | Maximum degree allowed for the course                     |
+
+#### Constraints
+
+| Type | Name             | Definition                               |
+| ---- | ---------------- | -----------------------------------------|
+| PK   | pk_course        |  (CourseID)                              |
+| CHK  | chk_course_degree|(MinDegree >= 0 AND MaxDegree > MinDegree)|
+
+#### Indexes
+
+| Name              | Column(s) | Type  | Reason                                                |
+| ----------------- | --------- | ----- | ----------------------------------------------------- |
+
+#### Notes
+
+- All fields are required at adding new course.
+
+---
+
+### Table: `Department`
+
+**Purpose:** Stores information about departments including their names and locations.
+**Owner:** Zahwa Kandeel
+**Schema file:** schema/01_org.sql
+
+#### Columns
+
+|    Column    | Type   | Nullable | Default | Collation | Description                                               |
+| ------------ | ------ | -------- | ------- | --------- | --------------------------------------------------------- |
+| DepartmentID | SERIAL | NO       | auto    | —         | Primary key, auto-incremented department identifier       |
+|DepartmentName| TEXT   | NO       | —       | —         | Name of the department                                    |
+|   Location   | TEXT   | YES      | —       | —         | Location for the department                               |
+
+#### Constraints
+
+| Type | Name             | Definition                               |
+| ---- | ---------------- | -----------------------------------------|
+| PK   | pk_department    |  (DepartmentID)                          |
+
+#### Indexes
+
+| Name              | Column(s) | Type  | Reason                                                |
+| ----------------- | --------- | ----- | ----------------------------------------------------- |
+
+#### Notes
+
+- 'Location` is the only nullable column; all other fields are required at adding the department.
+
+---
+
+### Table: `Track`
+
+**Purpose:** Stores information about tracks including their name and departments.
+**Owner:** Zahwa Kandeel
+**Schema file:** schema/01_org.sql
+
+#### Columns
+
+|    Column    | Type   | Nullable | Default | Collation | Description                                               |
+| ------------ | ------ | -------- | ------- | --------- | --------------------------------------------------------- |
+|  TrackID     | SERIAL | NO       | auto    | —         | Primary key, auto-incremented track identifier            |
+|  TrackName   | TEXT   | NO       | —       | —         | Name of the track                                         |
+| DepartmentID | INT    | YES      | —       | —         | References the department this track belongs to           |
+
+#### Constraints
+
+| Type | Name              | Definition                                              |
+| ---- | ----------------- | --------------------------------------------------------|
+| PK   | pk_track          |  (TrackID)                                              |
+| FK   |fk_track_department|DepartmentID → Department(DepartmentID) ON DELETE CASCADE|
+
+#### Indexes
+
+| Name              | Column(s) | Type  | Reason                                                |
+| ----------------- | --------- | ----- | ----------------------------------------------------- |
+
+#### Notes
+
+- Each track belongs to a department.
+- ON DELETE CASCADE means deleting a department will delete its tracks automatically.
+
+---
+
+
+### Table: `Track_Course`
+
+**Purpose:** Junction table that links tracks with courses (many-to-many relationship).
+**Owner:** Zahwa Kandeel
+**Schema file:** schema/01_org.sql
+
+#### Columns
+
+|    Column    | Type   | Nullable | Default | Collation | Description                                               |
+| ------------ | ------ | -------- | ------- | --------- | --------------------------------------------------------- |
+|  TrackID     |  INT   | NO       | auto    | —         | References a track                                        |
+|  CourseID    |  INT   | NO       | —       | —         | References a course                                       |
+
+#### Constraints
+
+| Type | Name              | Definition                                              |
+| ---- | ----------------- | --------------------------------------------------------|
+| PK   | pk_track_course   | (TrackID,CourseID)                                      |
+| FK   | fk_tc_track       | TrackID → Track(TrackID) ON DELETE CASCADE              |
+| FK   | fk_tc_course      | CourseID → Course(CourseID) ON DELETE CASCADE              |
+
+#### Indexes
+
+| Name              | Column(s) | Type  | Reason                                                |
+| ----------------- | --------- | ----- | ----------------------------------------------------- |
+
+#### Notes
+
+- This table implements a many-to-many relationship between Track and Course.
+- Composite primary key ensures no duplicate pair of (TrackID, CourseID).
+- ON DELETE CASCADE ensures:
+1.Deleting a track removes related records.
+2.Deleting a course removes related records.
+
+---
