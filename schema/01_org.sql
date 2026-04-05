@@ -1,8 +1,8 @@
 CREATE TABLE Course (
 	CourseID SERIAL PRIMARY KEY,
 	CourseName TEXT NOT NULL,
-	MinDegree INT,
-	MaxDegree INT
+	MinDegree INT NOT NULL,
+	MaxDegree INT NOT NULL
 	
 	CONSTRAINT chk_course_degree
 	CHECK (MinDegree >= 0 AND MaxDegree > MinDegree)
