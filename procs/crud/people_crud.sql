@@ -88,7 +88,7 @@ CREATE OR REPLACE PROCEDURE AssignStudentToTrack(s_id INT, t_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    INSERT INTO Student_Track VALUES (s_id, t_id)
+    INSERT INTO Student_Track VALUES (s_id, t_id);
     EXCEPTION 
     WHEN foreign_key_violation THEN
     RAISE EXCEPTION 'Student or Track ID does not exist.';
@@ -190,7 +190,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    INSERT INTO Instructor_Course VALUES (i_id, c_id)
+    INSERT INTO Instructor_Course VALUES (i_id, c_id);
     EXCEPTION 
     WHEN foreign_key_violation THEN
     RAISE EXCEPTION 'Instructor or Course ID does not exist.';
