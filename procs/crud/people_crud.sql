@@ -77,7 +77,7 @@ END;
 $$;
 
 --=========================================
---function Name: select_student
+--function Name: SelectStudent
 --Description: Retrieve student data according to sent params
 --Parameters:
 --      result: output parameter
@@ -87,12 +87,12 @@ $$;
 --      s_phone: student phone
 -- call example : 
                 --BEGIN;
-                --CALL select_student('result');
+                --CALL SelectStudent('result');
                 --FETCH ALL FROM result;
                 --COMMIT;
 --=========================================
 
-CREATE OR REPLACE PROCEDURE select_student(INOUT result REFCURSOR, s_id INT DEFAULT NULL, s_name TEXT DEFAULT NULL, s_email TEXT DEFAULT NULL, s_phone TEXT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE SelectStudent(INOUT result REFCURSOR, s_id INT DEFAULT NULL, s_name TEXT DEFAULT NULL, s_email TEXT DEFAULT NULL, s_phone TEXT DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -230,7 +230,7 @@ $$;
 
 
 --=========================================
---function Name: select_instructor
+--function Name: SelectInstructor
 --Description: Retrieve instructor data according to sent params
 --Parameters:
 --      result: output parameter
@@ -240,12 +240,12 @@ $$;
 --      i_department: instructor department
 -- call example : 
                 --BEGIN;
-                --CALL select_instructor('result');
+                --CALL SelectInstructor('result');
                 --FETCH ALL FROM result;
                 --COMMIT;
 --=========================================
 
-CREATE OR REPLACE PROCEDURE select_instructor(INOUT result REFCURSOR, i_id INT DEFAULT NULL, i_name TEXT DEFAULT NULL, i_email TEXT DEFAULT NULL, i_department INT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE SelectInstructor(INOUT result REFCURSOR, i_id INT DEFAULT NULL, i_name TEXT DEFAULT NULL, i_email TEXT DEFAULT NULL, i_department INT DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
