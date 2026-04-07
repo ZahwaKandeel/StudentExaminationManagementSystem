@@ -3,7 +3,7 @@
 -- =============================================================================
 
 --=========================================
---procedure Name: insert_student
+--procedure Name: InsertStudent 
 --Description: Adds new student
 --Parameters:
 --		s_name : student name
@@ -11,7 +11,7 @@
 --		s_phone : student phone
 --=========================================
 
-CREATE OR REPLACE PROCEDURE insert_student(s_name TEXT, s_email TEXT, s_phone TEXT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE InsertStudent(s_name TEXT, s_email TEXT, s_phone TEXT DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -27,7 +27,7 @@ END;
 $$;
 
 --=========================================
---procedure Name: update_student
+--procedure Name: UpdateStudent
 --Description: Updates existing student
 --Parameters:
 --		s_id : student ID
@@ -36,7 +36,7 @@ $$;
 --      s_phone: student phone
 --=========================================
 
-CREATE OR REPLACE PROCEDURE update_student(s_id INT, s_name TEXT DEFAULT NULL, s_email TEXT DEFAULT NULL, s_phone TEXT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE UpdateStudent(s_id INT, s_name TEXT DEFAULT NULL, s_email TEXT DEFAULT NULL, s_phone TEXT DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -58,13 +58,13 @@ END;
 $$;
 
 --=========================================
---procedure Name: delete_student
+--procedure Name: DeleteStudent
 --Description: Deletes existing student
 --Parameters:
---		s_id : student name
+--		s_id : student id
 --=========================================
 
-CREATE OR REPLACE PROCEDURE delete_student(s_id INT)
+CREATE OR REPLACE PROCEDURE DeleteStudent(s_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -77,33 +77,32 @@ END;
 $$;
 
 --=========================================
---function Name: select_student
---Description: Returns student by student name
+--procedure Name: AssignStudentToTrack
+--Description: assign student to track
 --Parameters:
---		p_DepartmentName : student name
--- call example : SELECT * FROM SelectDepartmentByName('departmentName');
+--		s_id : student id
+--      t_id : track id
 --=========================================
 
-CREATE OR REPLACE PROCEDURE select_student(INOUT result REFCURSOR, s_id INT DEFAULT NULL, s_name TEXT DEFAULT NULL, s_email TEXT DEFAULT NULL, s_phone TEXT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE AssignStudentToTrack(s_id INT, t_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    OPEN result FOR
-    SELECT * from student WHERE
-    (s_id IS NULL OR StudentID = s_id) AND
-    (s_name IS NULL OR Name ILIKE '%' || s_name || '%') AND
-    (s_email IS NULL OR Email = s_email) AND
-    (s_phone IS NULL OR Phone = s_phone) ;
+    INSERT INTO Student_Track VALUES (s_id, t_id)
+    EXCEPTION 
+    WHEN foreign_key_violation THEN
+    RAISE EXCEPTION 'Student or Track ID does not exist.';
+    WHEN unique_violation THEN
+    RAISE EXCEPTION 'This student is already assigned to this track.';
 END;
 $$;
-
 
 -- =============================================================================
 -- INSTRUCTOR
 -- =============================================================================
 
 --=========================================
---procedure Name: insert_Instructor
+--procedure Name: InsertInstructor
 --Description: Adds new instructor
 --Parameters:
 --		i_name : instructor name
@@ -111,7 +110,7 @@ $$;
 --		i_department : instructor department
 --=========================================
 
-CREATE OR REPLACE PROCEDURE insert_Instructor(i_name TEXT, i_email TEXT, i_department INT )
+CREATE OR REPLACE PROCEDURE InsertInstructor(i_name TEXT, i_email TEXT, i_department INT )
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -129,7 +128,7 @@ END;
 $$;
 
 --=========================================
---procedure Name: update_instructor
+--procedure Name: UpdateInstructor
 --Description: Updates existing instructor
 --Parameters:
 --		i_id : instructor ID
@@ -138,7 +137,7 @@ $$;
 --      i_department: instructor department
 --=========================================
 
-CREATE OR REPLACE PROCEDURE update_instructor(i_id INT, i_name TEXT DEFAULT NULL, i_email TEXT DEFAULT NULL, i_department INT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE UpdateInstructor(i_id INT, i_name TEXT DEFAULT NULL, i_email TEXT DEFAULT NULL, i_department INT DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -162,13 +161,13 @@ END;
 $$;
 
 --=========================================
---procedure Name: delete_instructor
+--procedure Name: DeleteInstructor
 --Description: Deletes existing instructor
 --Parameters:
 --		i_id : instructor ID
 --=========================================
 
-CREATE OR REPLACE PROCEDURE delete_instructor(i_id INT)
+CREATE OR REPLACE PROCEDURE DeleteInstructor(i_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -180,30 +179,22 @@ END;
 $$;
 
 --=========================================
---function Name: select_instructor
---Description: Retrieve instructor data according to sent params
+--procedure Name: AssignInstructorToCourse
+--Description: Deletes existing instructor
 --Parameters:
---      result: output parameter
 --		i_id : instructor ID
---		i_name : instructor name
---		i_email : instructor email
---      i_department: instructor department
--- call example : 
-                --BEGIN;
-                --CALL select_instructor('result');
-                --FETCH ALL FROM result;
-                --COMMIT;
 --=========================================
 
-CREATE OR REPLACE PROCEDURE select_instructor(INOUT result REFCURSOR, i_id INT DEFAULT NULL, i_name TEXT DEFAULT NULL, i_email TEXT DEFAULT NULL, i_department INT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE AssignInstructorToCourse(i_id INT, c_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    OPEN result FOR
-    SELECT * from instructor WHERE
-    (i_id IS NULL OR InstructorID = i_id) AND
-    (i_name IS NULL OR Name ILIKE '%' || i_name || '%') AND
-    (i_email IS NULL OR Email = i_email) AND
-    (i_department IS NULL OR DepartmentNo = i_department) ;
+
+    INSERT INTO Instructor_Course VALUES (i_id, c_id)
+    EXCEPTION 
+    WHEN foreign_key_violation THEN
+    RAISE EXCEPTION 'Instructor or Course ID does not exist.';
+    WHEN unique_violation THEN
+    RAISE EXCEPTION 'This Instructor is already assigned to this Course.';
 END;
 $$;
