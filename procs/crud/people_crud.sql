@@ -78,10 +78,18 @@ $$;
 
 --=========================================
 --function Name: select_student
---Description: Returns student by student name
+--Description: Retrieve student data according to sent params
 --Parameters:
---		p_DepartmentName : student name
--- call example : SELECT * FROM SelectDepartmentByName('departmentName');
+--      result: output parameter
+--		s_id : student ID
+--		s_name : student name
+--		s_email : student email
+--      s_phone: student phone
+-- call example : 
+                --BEGIN;
+                --CALL select_student('result');
+                --FETCH ALL FROM result;
+                --COMMIT;
 --=========================================
 
 CREATE OR REPLACE PROCEDURE select_student(INOUT result REFCURSOR, s_id INT DEFAULT NULL, s_name TEXT DEFAULT NULL, s_email TEXT DEFAULT NULL, s_phone TEXT DEFAULT NULL)
