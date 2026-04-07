@@ -77,6 +77,27 @@ END;
 $$;
 
 --=========================================
+--function Name: select_student
+--Description: Returns student by student name
+--Parameters:
+--		p_DepartmentName : student name
+-- call example : SELECT * FROM SelectDepartmentByName('departmentName');
+--=========================================
+
+CREATE OR REPLACE PROCEDURE select_student(INOUT result REFCURSOR, s_id INT DEFAULT NULL, s_name TEXT DEFAULT NULL, s_email TEXT DEFAULT NULL, s_phone TEXT DEFAULT NULL)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    OPEN result FOR
+    SELECT * from student WHERE
+    (s_id IS NULL OR StudentID = s_id) AND
+    (s_name IS NULL OR Name ILIKE '%' || s_name || '%') AND
+    (s_email IS NULL OR Email = s_email) AND
+    (s_phone IS NULL OR Phone = s_phone) ;
+END;
+$$;
+
+--=========================================
 --procedure Name: AssignStudentToTrack
 --Description: assign student to track
 --Parameters:
@@ -196,5 +217,35 @@ BEGIN
     RAISE EXCEPTION 'Instructor or Course ID does not exist.';
     WHEN unique_violation THEN
     RAISE EXCEPTION 'This Instructor is already assigned to this Course.';
+END;
+$$;
+
+
+--=========================================
+--function Name: select_instructor
+--Description: Retrieve instructor data according to sent params
+--Parameters:
+--      result: output parameter
+--		i_id : instructor ID
+--		i_name : instructor name
+--		i_email : instructor email
+--      i_department: instructor department
+-- call example : 
+                --BEGIN;
+                --CALL select_instructor('result');
+                --FETCH ALL FROM result;
+                --COMMIT;
+--=========================================
+
+CREATE OR REPLACE PROCEDURE select_instructor(INOUT result REFCURSOR, i_id INT DEFAULT NULL, i_name TEXT DEFAULT NULL, i_email TEXT DEFAULT NULL, i_department INT DEFAULT NULL)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    OPEN result FOR
+    SELECT * from instructor WHERE
+    (i_id IS NULL OR InstructorID = i_id) AND
+    (i_name IS NULL OR Name ILIKE '%' || i_name || '%') AND
+    (i_email IS NULL OR Email = i_email) AND
+    (i_department IS NULL OR DepartmentNo = i_department) ;
 END;
 $$;

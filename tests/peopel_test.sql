@@ -29,6 +29,65 @@ SELECT * FROM Student;
 CALL DeleteStudent(999);
 SELECT * FROM Student;
 
+
+
+-- TEST CASE 1: Get ALL Instructors (All params NULL)
+BEGIN;
+CALL select_instructor('res_all');
+FETCH ALL FROM res_all;
+COMMIT;
+
+-- TEST CASE 2: Search by Name Pattern (Partial Match)
+-- This should find 'Dr. Ahmed' if you search 'Ahmed'
+BEGIN;
+CALL select_instructor('res_name', i_name => 'ahmed');
+FETCH ALL FROM res_name;
+COMMIT;
+
+-- TEST CASE 3: Search by Department ID
+BEGIN;
+CALL select_instructor('res_dept', i_department => 1);
+FETCH ALL FROM res_dept;
+COMMIT;
+
+-- TEST CASE 4: Specific Instructor by ID and Email
+BEGIN;
+CALL select_instructor('res_specific', i_id => 1, i_email => 'ahmed@university.edu');
+FETCH ALL FROM res_specific;
+COMMIT;
+
+
+
+
+-- TEST CASE 1: Get ALL Students
+BEGIN;
+CALL select_student('stu_all');
+FETCH ALL FROM stu_all;
+COMMIT;
+
+-- TEST CASE 2: Search by Name (Case Insensitive)
+-- Should find "Alice Johnson" even if you type "ALICE"
+BEGIN;
+CALL select_student('stu_name', s_name => 'Bob');
+FETCH ALL FROM stu_name;
+COMMIT;
+
+-- TEST CASE 3: Search by Phone Number
+BEGIN;
+CALL select_student('stu_phone', s_phone => '01122334455');
+FETCH ALL FROM stu_phone;
+COMMIT;
+
+-- TEST CASE 4: No Results (Search for non-existent student)
+BEGIN;
+CALL select_student('stu_none', s_name => 'Zebra');
+FETCH ALL FROM stu_none; -- Should return an empty row set
+COMMIT;
+
+
+
+
+
 -- First, ensure we have a Track to assign to
 INSERT INTO Track (TrackName, DepartmentID) VALUES ('Data Science', 1);
 -- Re-insert a student since we deleted the previous one
