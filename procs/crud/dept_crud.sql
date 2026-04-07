@@ -251,3 +251,126 @@ BEGIN
     JOIN Department d ON d.DepartmentID = t.DepartmentID;
 END;
 $$;
+
+--==============================================================================================================================================
+
+
+--Course Table CRUD Procedures:
+
+--=========================================
+--procedure Name: InsertCourse
+--Description: Adds new course
+--Parameters:
+--	p_CourseName : course name
+--	p_MinDegree : minimum course degree
+--	p_MaxDegree : maximum course degree
+--=========================================
+
+CREATE OR REPLACE PROCEDURE InsertCourse(
+	p_CourseName TEXT,
+	p_MinDegree INT,
+	p_MaxDegree INT
+	
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	INSERT INTO Course(CourseName,MinDegree,MaxDegree)
+	VALUES (p_CourseName,p_MinDegree,p_MaxDegree);
+END;
+$$;
+
+
+--=========================================
+--procedure Name: UpdateCourseDegrees
+--Description: Updates existing course
+--Parameters:
+--		p_CourseName : course name
+--		p_MinDegree : course minimum degree
+--		p_MaxDegree : course maximum degree
+--=========================================
+
+CREATE OR REPLACE PROCEDURE UpdateCourseDegrees(
+	p_CourseName TEXT,
+	p_MinDegree INT,
+	p_MaxDegree INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	UPDATE Course
+	SET
+		MinDegree = p_MinDegree,
+		MaxDegree = p_MaxDegree
+	WHERE CourseName = p_CourseName;
+END;
+$$;
+
+
+--=========================================
+--procedure Name: DeleteCourseByName
+--Description: Deletes existing course
+--Parameters:
+--		p_CourseName : course name
+--=========================================
+
+CREATE OR REPLACE PROCEDURE DeleteCourseByName(
+	p_CourseName TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	DELETE FROM Course
+	WHERE CourseName = p_CourseName;
+END;
+$$;
+
+
+--=========================================
+--function Name: SelectCourseByName
+--Description: Returns course by track course
+--Parameters:
+--		p_CourseName : course name
+-- call example : SELECT * FROM SelectCourseByName('course name');
+--=========================================
+
+CREATE OR REPLACE FUNCTION SelectCourseByName(
+	p_CourseName TEXT
+)
+RETURNS TABLE (
+    CourseName TEXT,
+	MinDegree INT,
+	MaxDegree INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	RETURN QUERY
+	SELECT c.CourseName, c.MinDegree, c.MaxDegree
+	FROM Course c
+	WHERE c.CourseName = p_CourseName;
+END;
+$$;
+
+
+--=========================================
+--function Name: SelectAllCourses
+--Description: Returns all courses
+-- call example : SELECT * FROM SelectAllCourses()
+--=========================================
+
+CREATE OR REPLACE FUNCTION SelectAllCourses()
+RETURNS TABLE (
+    CourseName TEXT,
+	MinDegree INT,
+	MaxDegree INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT  c.CourseName, c.MinDegree, c.MaxDegree
+	FROM Course c;
+END;
+$$;
+
