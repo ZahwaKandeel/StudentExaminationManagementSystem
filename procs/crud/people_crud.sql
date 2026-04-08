@@ -22,7 +22,7 @@ BEGIN
     WHEN unique_violation THEN
         RAISE EXCEPTION 'A student with email "%" already exists.', s_email;
     WHEN not_null_violation THEN
-        RAISE EXCEPTION 'A required field is missing.';
+        RAISE EXCEPTION 'Name or Email cant be empty.';
 END;
 $$;
 
@@ -147,12 +147,12 @@ BEGIN
     INSERT INTO instructor (Name, Email, DepartmentNo) VALUES(i_name, i_email, i_department);
     
     EXCEPTION
-    WHEN not_null_violation THEN
-        RAISE EXCEPTION 'A required field is missing.';
     WHEN unique_violation THEN
         RAISE EXCEPTION 'An instructor with email "%" already exists.', i_email;
     WHEN foreign_key_violation THEN
         RAISE EXCEPTION 'Department with ID % does not exist.', i_department;
+    WHEN not_null_violation THEN
+        RAISE EXCEPTION 'Name or Email cant be empty.';
 END;
 $$;
 
