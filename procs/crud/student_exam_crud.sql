@@ -12,12 +12,14 @@
 --      end_time : exam end time
 --=========================================
 
-CREATE OR REPLACE PROCEDURE InsertStudentExam(s_id INT, ex_id INT, start_time TIMESTAMP , end_time TIMESTAMP DEFAULT NULL )
+CREATE OR REPLACE PROCEDURE InsertStudentExam(OUT sx_id INT,s_id INT, ex_id INT, start_time TIMESTAMP , end_time TIMESTAMP DEFAULT NULL )
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    INSERT INTO studentexam (studentid, examid, starttime, endtime) VALUES(s_id, ex_id, start_time, end_time);
+    INSERT INTO studentexam (studentid, examid, starttime, endtime) 
+    VALUES(s_id, ex_id, start_time, end_time)
+    RETURNING studentexamid INTO sx_id;
 
     EXCEPTION
     WHEN foreign_key_violation THEN
