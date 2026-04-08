@@ -27,7 +27,7 @@ BEGIN
     WHEN not_null_violation THEN
         RAISE EXCEPTION 'Start time cant be empty.';
     WHEN check_violation THEN
-        RAISE EXCEPTION 'End time cant be less tna Start time'
+        RAISE EXCEPTION 'End time cant be less than Start time';
 END;
 $$;
 
@@ -51,14 +51,12 @@ BEGIN
 
     UPDATE studentexam
     SET
-        totalgrade  = COALESCE(t_grade , totalgrade),
+        totalgrade  = COALESCE(t_grade , totalgrade)
     WHERE studentexamid = sx_id;
 
     EXCEPTION
-    WHEN unique_violation THEN
-        RAISE EXCEPTION 'A studentexam with email "%" already exists.', s_email;
     WHEN check_violation THEN
-        RAISE EXCEPTION 'Total grade cant be less than 0'
+        RAISE EXCEPTION 'Total grade cant be less than 0';
 END;
 $$;
 
@@ -143,6 +141,6 @@ BEGIN
     OPEN result FOR
     SELECT * from studentanswer WHERE
     (sa_id IS NULL OR studentanswerid = sa_id) AND
-    (sx_id IS NULL OR studentexamid  = sx_id) AND
+    (sx_id IS NULL OR studentexamid  = sx_id);
 END;
 $$;
