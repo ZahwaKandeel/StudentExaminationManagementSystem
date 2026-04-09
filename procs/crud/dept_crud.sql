@@ -78,7 +78,7 @@ $$;
 
 
 --====================================================
---function Name: SelectDepartmentByName
+--procedure Name: SelectDepartmentByName
 --Description: Retrieve departments by name 
 --Parameters:
 --      ref: output parameter
@@ -208,7 +208,7 @@ $$;
 
 
 --==============================================================
---function Name: SelectTrackByName
+--procedure Name: SelectTrackByName
 --Description: Retrieve tracks by name 
 --Parameters:
 --      ref: output parameter
@@ -340,7 +340,7 @@ $$;
 
 
 --=========================================
---function Name: SelectCourseByName
+--procedure Name: SelectCourseByName
 --Description: Returns course by track course
 --Parameters:
 --      ref: output parameter
