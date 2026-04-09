@@ -1,4 +1,4 @@
---Exam Table CRUD Procedures:
+--exam Table CRUD Procedures:
 
 --============================================================
 --procedure Name: insertExam
@@ -101,7 +101,7 @@ $$
 
 
 --=================================================================
---function Name: getExamByID
+--procedure Name: getExamByID
 --Description: Retrieve exams by id 
 --Parameters:
 --      ref: output parameter
@@ -111,7 +111,7 @@ $$
 --			CALL getExamByID(p_examid, 'mycursor');
 --			FETCH ALL FROM mycursor;
 --			COMMIT;
---================================================================
+--=================================================================
 
 CREATE OR REPLACE PROCEDURE getExamByID(IN p_examid INT, INOUT p_cursor REFCURSOR)
 LANGUAGE plpgsql
@@ -129,5 +129,134 @@ BEGIN
 EXCEPTION
     WHEN OTHERS THEN
         RAISE EXCEPTION 'Error fetching exam: %', SQLERRM;
+END;
+$$;
+
+-- examquestion Table CRUD Procedures:
+
+
+--============================================================
+--procedure Name: insert_examquestion
+--Description: Adds new exam questions
+--Parameters:
+--		e_examid : exam id
+--		e_questionid : question id
+--		e_orderno : order number
+--===========================================================
+
+CREATE OR REPLACE PROCEDURE insert_examquestion(e_examid INT,e_questionid INT,e_orderno INT)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	IF e_orderno <= 0 THEN
+	RAISE EXCEPTION 'Order must be greater than 0';
+        END IF;
+
+	IF EXISTS (SELECT 1 FROM examquestion WHERE examid = e_examid AND questionid = e_questionid) THEN
+	RAISE EXCEPTION 'ExamQuestion already exists';
+	END IF;
+
+    INSERT INTO examquestion (examid, questionid, orderno)
+    VALUES (e_examid, e_questionid, e_orderno);
+
+EXCEPTION
+WHEN unique_violation THEN
+    RAISE EXCEPTION 'Duplicate order number for this exam';
+WHEN foreign_key_violation THEN
+    RAISE EXCEPTION 'Invalid examid or questionid';
+WHEN OTHERS THEN
+    RAISE EXCEPTION '%', SQLERRM;
+END;
+$$;
+
+
+--============================================================
+--procedure Name: update_examquestion
+--Description: update existing exam question
+--Parameters:
+--		e_examid : exam id
+--		e_questionid : question id
+--		e_orderno : order number
+--===========================================================
+
+CREATE OR REPLACE PROCEDURE update_examquestion(e_examid INT, e_questionid INT,e_orderno INT)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF e_orderno <= 0 THEN
+    RAISE EXCEPTION 'Order must be greater than 0';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM examquestion WHERE examid = e_examid AND questionid = e_questionid) THEN
+    RAISE EXCEPTION 'ExamQuestion not found';
+    END IF;
+
+    UPDATE examquestion SET orderno = e_orderno
+    WHERE examid = e_examid AND questionid = e_questionid;
+
+EXCEPTION
+WHEN unique_violation THEN
+    RAISE EXCEPTION 'Duplicate order number for this exam';
+WHEN OTHERS THEN
+    RAISE EXCEPTION '%', SQLERRM;
+END;
+$$;
+
+
+--====================================================
+--procedure Name: delete_examquestion
+--Description: Deletes existing exam question
+--Parameters:
+--		e_examid : exam id
+--		e_questionid : question id
+--=====================================================
+
+CREATE OR REPLACE PROCEDURE delete_examquestion(e_examid INT,e_questionid INT)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM examquestion WHERE examid = e_examid AND questionid = e_questionid) THEN
+    RAISE EXCEPTION 'ExamQuestion not found';
+    END IF;
+
+    DELETE FROM examquestion WHERE examid = e_examid AND questionid = e_questionid;
+
+EXCEPTION
+WHEN OTHERS THEN
+    RAISE EXCEPTION '%', SQLERRM;
+END;
+$$;
+
+
+--=================================================================
+--procedure Name: get_examquestion_by_id
+--Description: Retrieve exam questions by id 
+--Parameters:
+--      ref: output parameter
+--		e_examid : exam ID
+--		e_questionid : question ID
+-- call example : 
+--			BEGIN;
+--			CALL get_examquestion_by_id(e_examid,e_questionid , 'mycursor');
+--			FETCH ALL FROM mycursor;
+--			COMMIT;
+--=================================================================
+
+CREATE OR REPLACE PROCEDURE get_examquestion_by_id(e_examid INT,e_questionid INT,INOUT ref refcursor)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM examquestion WHERE examid = e_examid AND questionid = e_questionid) THEN
+    RAISE EXCEPTION 'ExamQuestion not found';
+    END IF;
+
+    OPEN ref FOR
+    SELECT eq.examid, eq.questionid, eq.orderno
+    FROM examquestion eq
+    WHERE eq.examid = e_examid AND eq.questionid = e_questionid;
+
+EXCEPTION
+WHEN OTHERS THEN
+    RAISE EXCEPTION '%', SQLERRM;
 END;
 $$;
