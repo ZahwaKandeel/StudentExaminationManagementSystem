@@ -5,31 +5,54 @@
 --set database name as university for now
 
 
---=====================================
+--=================================================================================
+
 --  Admin role
---=====================================
+--=================================================================================
+
 
 CREATE ROLE adminUser WITH LOGIN PASSWORD 'Admin1234' LOGIN SUPERUSER CREATEDB CREATEROLE REPLICATION;
 GRANT ALL PRIVILEGES ON SCHEMA public TO admin_user;
 
 
---====================================
+--=================================================================================
 --  Instructor role
---====================================
+--=================================================================================
 CREATE ROLE Instructor WITH LOGIN PASSWORD 'Student1234';
 
 -- give the user main functionalities
 GRANT CONNECT ON DATABASE university TO Instructor;
 GRANT USAGE ON SCHEMA public TO Instructor;
 
--- give the user the access to the procedures available for him
-
---sGenerate exams, manage questions/topics Read/Write on relevant tables via procedures
+--=====================================================
+-- Grant the ability to generate exam Generate exams
+--=====================================================
 GRANT EXECUTE ON PROCEDURE -procedure name- TO Instructor
 
---=====================================
+--====================================================
+--  Grant all the available procedures on the question table
+--====================================================
+GRANT EXECUTE ON PROCEDURE InsertQuestion TO Instructor
+GRANT EXECUTE ON PROCEDURE UpdateQuestion TO Instructor
+GRANT EXECUTE ON PROCEDURE DeleteQuestion TO Instructor
+GRANT EXECUTE ON PROCEDURE SelectQuestionsByCourse TO Instructor
+
+--====================================================
+--  Grant all the available procedures on the choice table
+--====================================================
+GRANT EXECUTE ON PROCEDURE InsertOption TO Instructor
+GRANT EXECUTE ON PROCEDURE UpdateOption TO Instructor
+GRANT EXECUTE ON PROCEDURE DeleteOption TO Instructor
+GRANT EXECUTE ON PROCEDURE SelectOptionsByQuestion TO Instructor
+
+--====================================================
+--  Grant all the available procedures on the model Answer table
+--====================================================
+GRANT EXECUTE ON PROCEDURE SetModelAnswer TO Instructor
+
+--=================================================================================
 --  Student role
---=====================================
+--=================================================================================
 CREATE ROLE Student WITH LOGIN PASSWORD 'Student1234';
 
 -- give the user main functionalities
@@ -38,6 +61,13 @@ GRANT USAGE ON SCHEMA public TO Student;
 
 -- give the user the access to the procedures available for him
 
---student can 1-use take exam procedure 2- use view results procedure 
+-- 2- use view results procedure 
+--======================================================
+-- Student can submit exam answer 
+--======================================================
+GRANT EXECUTE ON PROCEDURE SubmitExamAnswers TO Student
 
+--======================================================
+-- Student can use correct exam answer 
+--======================================================
 GRANT EXECUTE ON PROCEDURE -procedure name- TO Student
