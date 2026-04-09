@@ -25,47 +25,32 @@ CREATE OR REPLACE PROCEDURE InsertQuestion(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Validate type manually (belt-and-suspenders on top of CHECK constraint)
+    
     IF p_type NOT IN ('MCQ', 'TF') THEN
         RAISE EXCEPTION 'Invalid question type: %. Must be MCQ or TF.', p_type;
     END IF;
 
-    -- Validate points
+    
     IF p_points <= 0 THEN
         RAISE EXCEPTION 'Points must be greater than 0. Got: %', p_points;
     END IF;
 
-    -- Validate course exists
+    
     IF NOT EXISTS (SELECT 1 FROM course WHERE courseid = p_courseid) THEN
         RAISE EXCEPTION 'Course with ID % does not exist.', p_courseid;
     END IF;
 
-    -- Insert the question
+    
     INSERT INTO question (courseid, questiontext, type, points)
     VALUES (p_courseid, p_questiontext, p_type, p_points)
     RETURNING questionid INTO new_questionid;
 
-    RAISE NOTICE 'Question inserted successfully. ID: %', new_questionid;
+    
 END;
 $$;
 
 
 
--- Declare a variable to receive the OUT parameter
-DO $$
-DECLARE
-    v_id INT;
-BEGIN
-    CALL InsertQuestion(
-        p_courseid     := 1,
-        p_questiontext := 'What is the primary key in PostgreSQL?',
-        p_type         := 'MCQ',
-        p_points       := 2,
-        new_questionid := v_id
-    );
-    RAISE NOTICE 'New question ID is: %', v_id;
-END;
-$$;
 
 -- =============================================================
 -- Procedure : UpdateQuestion
@@ -90,22 +75,22 @@ CREATE OR REPLACE PROCEDURE UpdateQuestion(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Check question exists
+    
     IF NOT EXISTS (SELECT 1 FROM question WHERE questionid = p_questionid) THEN
         RAISE EXCEPTION 'Question with ID % does not exist.', p_questionid;
     END IF;
 
-    -- Validate new type if provided
+    
     IF p_type IS NOT NULL AND p_type NOT IN ('MCQ', 'TF') THEN
         RAISE EXCEPTION 'Invalid type: %. Must be MCQ or TF.', p_type;
     END IF;
 
-    -- Validate new points if provided
+    -
     IF p_points IS NOT NULL AND p_points <= 0 THEN
         RAISE EXCEPTION 'Points must be greater than 0. Got: %', p_points;
     END IF;
 
-    -- Update only the columns that were passed (COALESCE keeps existing value if NULL)
+    
     UPDATE question
     SET
         questiontext = COALESCE(p_questiontext, questiontext),
@@ -113,24 +98,13 @@ BEGIN
         points       = COALESCE(p_points, points)
     WHERE questionid = p_questionid;
 
-    RAISE NOTICE 'Question % updated successfully.', p_questionid;
+    
 END;
 $$;
 
 
 
--- Update only the points, keep everything else the same
-CALL UpdateQuestion(
-    p_questionid := 5,
-    p_points     := 3
-);
 
--- Update text and type together
-CALL UpdateQuestion(
-    p_questionid   := 5,
-    p_questiontext := 'Updated question text here',
-    p_type         := 'TF'
-);
 
 -- =============================================================
 -- Procedure : DeleteQuestion
@@ -153,24 +127,22 @@ CREATE OR REPLACE PROCEDURE DeleteQuestion(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Check question exists
+    
     IF NOT EXISTS (SELECT 1 FROM question WHERE questionid = p_questionid) THEN
         RAISE EXCEPTION 'Question with ID % does not exist.', p_questionid;
     END IF;
 
-    -- Check it is not used in any exam (FK is RESTRICT so this would fail anyway,
-    -- but we give a clear message instead of a raw FK violation error)
+    
     IF EXISTS (SELECT 1 FROM examquestion WHERE questionid = p_questionid) THEN
         RAISE EXCEPTION
             'Cannot delete question %. It is used in one or more exams.
              Remove it from all exams first.', p_questionid;
     END IF;
 
-    -- Delete the question
-    -- choice and modelanswer rows are removed automatically via CASCADE
+    
     DELETE FROM question WHERE questionid = p_questionid;
 
-    RAISE NOTICE 'Question % deleted. Associated choices and model answer removed.', p_questionid;
+    
 END;
 $$;
 
@@ -185,20 +157,16 @@ C
 -- Returns   : Table of question rows
 -- =============================================================
 
-CREATE OR REPLACE FUNCTION SelectQuestionsByCourse(
+CREATE OR REPLACE PROCEDURE SelectQuestionsByCourse(
+    inout result refcursor,
     p_courseid  INT,
     p_type      TEXT DEFAULT NULL
 )
-RETURNS TABLE (
-    questionid    INT,
-    questiontext  TEXT,
-    type          TEXT,
-    points        INT
-)
+
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    RETURN QUERY
+    open result for
     SELECT
         q.questionid,
         q.questiontext,
@@ -213,14 +181,6 @@ $$;
 
 
 
--- Get all questions for course 1
-SELECT * FROM SelectQuestionsByCourse(1);
-
--- Get only MCQ questions for course 1
-SELECT * FROM SelectQuestionsByCourse(1, 'MCQ');
-
--- Count how many TF questions are available (used before GenerateExam)
-SELECT COUNT(*) FROM SelectQuestionsByCourse(1, 'TF');
 
 
 -- ===================== Choice procedures ======================
@@ -253,7 +213,7 @@ DECLARE
     v_max_choices   INT;
     v_current_count INT;
 BEGIN
-    -- Check question exists and get its type
+    
     SELECT type INTO v_type
     FROM question
     WHERE questionid = p_questionid;
@@ -262,18 +222,18 @@ BEGIN
         RAISE EXCEPTION 'Question with ID % does not exist.', p_questionid;
     END IF;
 
-    -- Set max allowed choices based on question type
+    
     v_max_choices := CASE v_type
         WHEN 'MCQ' THEN 4
         WHEN 'TF'  THEN 2
     END;
 
-    -- Count existing choices for this question
+    
     SELECT COUNT(*) INTO v_current_count
     FROM choice
     WHERE questionid = p_questionid;
 
-    -- Block if already at max
+   
     IF v_current_count >= v_max_choices THEN
         RAISE EXCEPTION
             'Question % is type % and already has % choices (maximum).
@@ -281,44 +241,26 @@ BEGIN
             p_questionid, v_type, v_max_choices;
     END IF;
 
-    -- Validate optionorder range
+    
     IF p_optionorder < 1 OR p_optionorder > v_max_choices THEN
         RAISE EXCEPTION
             'Invalid optionorder % for type %. Must be between 1 and %.',
             p_optionorder, v_type, v_max_choices;
     END IF;
 
-    -- Insert the choice
+    
     INSERT INTO choice (questionid, optiontext, optionorder)
     VALUES (p_questionid, p_optiontext, p_optionorder)
     RETURNING optionid INTO new_optionid;
 
-    RAISE NOTICE 'Choice inserted. ID: %, Order: %', new_optionid, p_optionorder;
+   
 END;
 $$;
 
 
 
 
--- Insert all 4 choices for an MCQ question
-DO $$
-DECLARE v_id INT;
-BEGIN
-    CALL InsertOption(1, 'Primary key',        1, v_id);
-    CALL InsertOption(1, 'Foreign key',        2, v_id);
-    CALL InsertOption(1, 'Unique constraint',  3, v_id);
-    CALL InsertOption(1, 'Check constraint',   4, v_id);
-END;
-$$;
-
--- Insert 2 choices for a TF question
-DO $$
-DECLARE v_id INT;
-BEGIN
-    CALL InsertOption(2, 'True',  1, v_id);
-    CALL InsertOption(2, 'False', 2, v_id);
-END;
-$$;
+-
 
 -- =============================================================
 -- Procedure : UpdateOption
@@ -374,14 +316,14 @@ BEGIN
         RAISE EXCEPTION 'Choice with ID % does not exist.', p_optionid;
     END IF;
 
-    -- Block if this choice is the current correct answer
+    
     IF EXISTS (SELECT 1 FROM modelanswer WHERE correctoptionid = p_optionid) THEN
         RAISE EXCEPTION
             'Cannot delete choice %. It is set as the correct model answer.
              Call SetModelAnswer to change the correct answer first.', p_optionid;
     END IF;
 
-    -- Block if a student has already selected this choice
+    
     IF EXISTS (SELECT 1 FROM studentanswer WHERE chosenoptionid = p_optionid) THEN
         RAISE EXCEPTION
             'Cannot delete choice %. It has been selected by one or more students.',
@@ -390,7 +332,7 @@ BEGIN
 
     DELETE FROM choice WHERE optionid = p_optionid;
 
-    RAISE NOTICE 'Choice % deleted successfully.', p_optionid;
+    
 END;
 $$;
 
@@ -406,14 +348,11 @@ $$;
 -- Returns   : Table of choice rows ordered by optionorder
 -- =============================================================
 
-CREATE OR REPLACE FUNCTION SelectOptionsByQuestion(
+CREATE OR REPLACE PROCEDURE SelectOptionsByQuestion(
+    inout result refcursor,
     p_questionid INT
 )
-RETURNS TABLE (
-    optionid    INT,
-    optiontext  TEXT,
-    optionorder INT
-)
+
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -421,7 +360,7 @@ BEGIN
         RAISE EXCEPTION 'Question with ID % does not exist.', p_questionid;
     END IF;
 
-    RETURN QUERY
+    OPEN result FOR
     SELECT
         c.optionid,
         c.optiontext,
@@ -462,19 +401,17 @@ AS $$
 DECLARE
     v_belongs BOOLEAN;
 BEGIN
-    -- Validate question exists
+    
     IF NOT EXISTS (SELECT 1 FROM question WHERE questionid = p_questionid) THEN
         RAISE EXCEPTION 'Question with ID % does not exist.', p_questionid;
     END IF;
 
-    -- Validate choice exists
+    
     IF NOT EXISTS (SELECT 1 FROM choice WHERE optionid = p_correctoptionid) THEN
         RAISE EXCEPTION 'Choice with ID % does not exist.', p_correctoptionid;
     END IF;
 
-    -- THE CRITICAL CHECK:
-    -- Verify the choice actually belongs to this question
-    -- PostgreSQL FK cannot enforce this cross-relationship automatically
+    
     SELECT EXISTS (
         SELECT 1 FROM choice
         WHERE optionid   = p_correctoptionid
@@ -488,30 +425,18 @@ BEGIN
             p_correctoptionid, p_questionid;
     END IF;
 
-    -- Insert or update the model answer
-    -- ON CONFLICT handles the case where a model answer already exists
-    -- and we are replacing it with a new correct answer
+    
     INSERT INTO modelanswer (questionid, correctoptionid)
     VALUES (p_questionid, p_correctoptionid)
     ON CONFLICT (questionid)
     DO UPDATE SET correctoptionid = EXCLUDED.correctoptionid;
 
-    RAISE NOTICE 'Model answer set for question %. Correct choice: %',
+    
         p_questionid, p_correctoptionid;
 END;
 $$;
 
 
 
--- Set the correct answer for question 1 to option 3
-CALL SetModelAnswer(
-    p_questionid      := 1,
-    p_correctoptionid := 3
-);
 
--- Change the correct answer later (safe, uses ON CONFLICT)
-CALL SetModelAnswer(
-    p_questionid      := 1,
-    p_correctoptionid := 1
-);
 
