@@ -6,7 +6,6 @@
 --             is flagged with is_correct = TRUE.
 -- PARAMETERS: p_examid INT  – the target exam ID
 -- RETURNS   : Result set via RETURN QUERY
--- EXCEPTIONS: RAISES EXCEPTION if exam does not exist
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION Report_ExamQuestions(p_examid INT)
