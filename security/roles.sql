@@ -68,6 +68,6 @@ GRANT USAGE ON SCHEMA public TO Student;
 GRANT EXECUTE ON PROCEDURE SubmitExamAnswers TO Student
 
 --======================================================
--- Student can use correct exam answer 
+-- Student can display his exam grades
 --======================================================
-GRANT EXECUTE ON PROCEDURE -procedure name- TO Student
+GRANT EXECUTE ON PROCEDURE Report_StudentGrades TO Student
