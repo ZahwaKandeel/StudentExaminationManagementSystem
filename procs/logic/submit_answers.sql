@@ -35,16 +35,16 @@ DECLARE
     Answer        JSONB;
 BEGIN
 
-    IF NOT EXISTS (SELECT 1 FROM Student WHERE StudentId = s_id)
+    IF NOT EXISTS (SELECT 1 FROM Student WHERE StudentId = s_id) THEN
         RAISE EXCEPTION 'Student with ID % does not exist.', s_id;
     END IF;
 
-    IF NOT EXISTS (SELECT 1 FROM Exam WHERE ExamId = ex_id)
+    IF NOT EXISTS (SELECT 1 FROM Exam WHERE ExamId = ex_id) THEN
         RAISE EXCEPTION 'Exam with ID % does not exist.', ex_id;
     END IF;
 
-    IF  (end_time <= start_time)
-        RAISE EXCEPTION 'End time can\'t be lower than Start time';
+    IF  (end_time <= start_time) THEN
+        RAISE EXCEPTION 'End time cant be lower than Start time';
     END IF;
 
     CALL InsertStudentExam(StudentExamID, s_id, ex_id, start_time ,end_time );

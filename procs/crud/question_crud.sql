@@ -16,11 +16,11 @@
 -- =============================================================
 
 CREATE OR REPLACE PROCEDURE InsertQuestion(
+    OUT new_questionid INT,
     p_courseid      INT,
     p_questiontext  TEXT,
     p_type          TEXT,
-    p_points        INT DEFAULT 1,
-    OUT new_questionid INT
+    p_points        INT DEFAULT 1
 )
 LANGUAGE plpgsql
 AS $$
@@ -48,9 +48,6 @@ BEGIN
     
 END;
 $$;
-
-
-
 
 -- =============================================================
 -- Procedure : UpdateQuestion
@@ -85,7 +82,6 @@ BEGIN
         RAISE EXCEPTION 'Invalid type: %. Must be MCQ or TF.', p_type;
     END IF;
 
-    -
     IF p_points IS NOT NULL AND p_points <= 0 THEN
         RAISE EXCEPTION 'Points must be greater than 0. Got: %', p_points;
     END IF;
@@ -101,10 +97,6 @@ BEGIN
     
 END;
 $$;
-
-
-
-
 
 -- =============================================================
 -- Procedure : DeleteQuestion
@@ -145,9 +137,6 @@ BEGIN
     
 END;
 $$;
-
-C
-
 -- =============================================================
 -- Function  : SelectQuestionsByCourse
 -- Purpose   : Return all questions for a given course
@@ -178,10 +167,6 @@ BEGIN
     ORDER BY q.questionid;
 END;
 $$;
-
-
-
-
 
 -- ===================== Choice procedures ======================
 
@@ -257,11 +242,6 @@ BEGIN
 END;
 $$;
 
-
-
-
--
-
 -- =============================================================
 -- Procedure : UpdateOption
 -- Purpose   : Update the text of an existing choice
@@ -291,8 +271,6 @@ BEGIN
     RAISE NOTICE 'Choice % updated successfully.', p_optionid;
 END;
 $$;
-
-
 
 -- =============================================================
 -- Procedure : DeleteOption
@@ -335,10 +313,6 @@ BEGIN
     
 END;
 $$;
-
-
-
-
 
 -- =============================================================
 -- Function  : SelectOptionsByQuestion
@@ -431,12 +405,5 @@ BEGIN
     ON CONFLICT (questionid)
     DO UPDATE SET correctoptionid = EXCLUDED.correctoptionid;
 
-    
-        p_questionid, p_correctoptionid;
 END;
 $$;
-
-
-
-
-

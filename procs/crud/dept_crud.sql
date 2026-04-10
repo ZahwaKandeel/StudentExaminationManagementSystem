@@ -115,7 +115,7 @@ BEGIN
 END;
 $$;
 
--==============================================================================================================================================
+--==============================================================================================================================================
 
 
 --Track Table CRUD Procedures:
@@ -368,5 +368,29 @@ BEGIN
 	SELECT c.CourseName, c.MinDegree, c.MaxDegree
 	FROM Course c
 	WHERE c.CourseName = c_CourseName;
+END;
+$$;
+
+
+CREATE OR REPLACE PROCEDURE AssignCourseToTrack ( t_TrackId INT, c_CourseId INT )
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseId = c_CourseId) THEN
+	RAISE EXCEPTION 'Course "%" does not exist', c_CourseId;
+    	END IF;
+
+	IF NOT EXISTS (SELECT 1 FROM Track WHERE TrackId = t_TrackId) THEN
+	RAISE EXCEPTION 'Track "%" does not exist', t_TrackId;
+    	END IF;
+
+    INSERT INTO Track_Course VALUES (t_TrackId, c_CourseId);
+	
+    EXCEPTION 
+    WHEN foreign_key_violation THEN
+    RAISE EXCEPTION 'Track or Course ID does not exist.';
+    WHEN unique_violation THEN
+    RAISE EXCEPTION 'This Course is already assigned to this Track.';
 END;
 $$;
