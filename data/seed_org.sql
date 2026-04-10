@@ -80,8 +80,7 @@ BEGIN
 END;
 $$;
 
--- Verify
-SELECT courseid, coursename, mindegree, maxdegree FROM course;
+
 
 -- ========================
 -- TRACK_COURSE (junction)

@@ -372,7 +372,7 @@ END;
 $$;
 
 
-CREATE OR REPLACE PROCEDURE AssignCourseToTrack (c_CourseId INT , t_TrackId INT)
+CREATE OR REPLACE PROCEDURE AssignCourseToTrack ( t_TrackId INT, c_CourseId INT )
 LANGUAGE plpgsql
 AS $$
 BEGIN
