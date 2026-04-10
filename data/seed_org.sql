@@ -148,7 +148,7 @@ BEGIN
     CALL AssignCourseToTrack(v_track_de, v_course_ml);
     CALL AssignCourseToTrack(v_track_de, v_course_py);
 
-END
+END;
 $$;
 
 -- Verify
