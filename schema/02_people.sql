@@ -1,13 +1,13 @@
 CREATE TABLE Student (
     StudentID   SERIAL          PRIMARY KEY,
-    Name        TEXT            NOT NULL,
+    Name        TEXT            COLLATE arabic_icu NOT NULL,
     Email       TEXT            NOT NULL UNIQUE,
     Phone       TEXT
 );
 
 CREATE TABLE Instructor (
     InstructorID    SERIAL      PRIMARY KEY,
-    Name            TEXT       NOT NULL,
+    Name            TEXT        COLLATE arabic_icu NOT NULL,
     Email           TEXT        NOT NULL UNIQUE,
     DepartmentNo    INT         NOT NULL,
 
