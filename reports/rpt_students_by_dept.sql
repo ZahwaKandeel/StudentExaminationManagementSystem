@@ -7,17 +7,16 @@
 --		CALL Report_StudentsByDepartment(1);
 --=========================================
 
-CREATE OR REPLACE PROCEDURE Report_StudentsByDepartment(d_DepartmentID INT)
+CREATE OR REPLACE PROCEDURE Report_StudentsByDepartment(d_DepartmentID INT, INOUT ref REFCURSOR)
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    IF NOT EXISTS (
-        SELECT 1 FROM Department WHERE DepartmentID = d_DepartmentID
-    ) THEN
-        RAISE EXCEPTION 'Department not found';
+    IF NOT EXISTS (SELECT 1 FROM Department WHERE DepartmentID = d_DepartmentID) THEN
+    RAISE EXCEPTION 'Department not found';
     END IF;
-
+    
+    OPEN ref FOR
     SELECT 
         s.StudentID,
         s.Name,

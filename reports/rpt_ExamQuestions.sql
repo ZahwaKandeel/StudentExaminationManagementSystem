@@ -8,20 +8,7 @@
 -- RETURNS   : Result set via RETURN QUERY
 -- ============================================================
 
-CREATE OR REPLACE FUNCTION Report_ExamQuestions(p_examid INT)
-RETURNS TABLE (
-    exam_id          INT,
-    exam_name        TEXT,
-    question_order   INT,
-    question_id      INT,
-    question_text    TEXT,
-    question_type    TEXT,
-    question_points  INT,
-    option_id        INT,
-    option_order     INT,
-    option_text      TEXT,
-    is_correct       BOOLEAN
-)
+CREATE OR REPLACE PROCEDURE Report_ExamQuestions(p_examid INT, INOUT ref REFCURSOR)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -30,7 +17,7 @@ BEGIN
 	RAISE EXCEPTION 'Exam with ID % does not exist.', p_examid;
 	END IF;
 
-    RETURN QUERY
+   	OPEN ref FOR
     SELECT
         e.examid                            AS exam_id,
         e.examname                          AS exam_name,
