@@ -30,70 +30,53 @@ RESTART IDENTITY CASCADE;
 -- DEPARTMENTS
 -- ========================
 DO $$
-DECLARE
-    v_id INT;
 BEGIN
-    CALL InsertDepartment('Information Technology', 'Cairo Branch',       v_id);
-    CALL InsertDepartment('Computer Science',       'Alexandria Branch',  v_id);
-    CALL InsertDepartment('Data Science & AI',      'Giza Branch',        v_id);
-    
+    CALL InsertDepartment('Information Technology', 'Cairo Branch');
+    CALL InsertDepartment('Computer Science',       'Alexandria Branch');
+    CALL InsertDepartment('Data Science & AI',      'Giza Branch');
 END;
 $$;
 
--- Verify
-SELECT departmentid, departmentname, location FROM department;
 
 -- ========================
 -- TRACKS
 -- ========================
 DO $$
 DECLARE
-    v_id    INT;
     v_dept  INT;
 BEGIN
     -- IT Department tracks
     SELECT departmentid INTO v_dept
     FROM department WHERE departmentname = 'Information Technology';
-    CALL InsertTrack('Web Development',   v_dept, v_id);
-    CALL InsertTrack('Network & Security', v_dept, v_id);
+    CALL InsertTrack('Web Development',    v_dept);
+    CALL InsertTrack('Network & Security', v_dept);
+
     -- CS Department tracks
     SELECT departmentid INTO v_dept
     FROM department WHERE departmentname = 'Computer Science';
-    CALL InsertTrack('Software Engineering', v_dept, v_id);
-    CALL InsertTrack('Mobile Development', v_dept, v_id);
+    CALL InsertTrack('Software Engineering', v_dept);
+    CALL InsertTrack('Mobile Development',   v_dept);
+
     -- DS & AI Department tracks
     SELECT departmentid INTO v_dept
     FROM department WHERE departmentname = 'Data Science & AI';
-    CALL InsertTrack('Machine Learning', v_dept, v_id);
-    CALL InsertTrack('Data Engineering', v_dept, v_id);
-    
+    CALL InsertTrack('Machine Learning', v_dept);
+    CALL InsertTrack('Data Engineering', v_dept);
 END;
 $$;
-
--- Verify
-SELECT
-    t.trackid,
-    t.trackname,
-    d.departmentname
-FROM track t
-JOIN department d ON t.departmentid = d.departmentid
-ORDER BY d.departmentid, t.trackid;
 
 -- ========================
 -- COURSES
 -- ========================
 DO $$
-DECLARE
-    v_id INT;
 BEGIN
-    CALL InsertCourse('Database Design & SQL',        50, 100, v_id);
-    CALL InsertCourse('Python Programming',           50, 100, v_id);
-    CALL InsertCourse('Web Technologies (HTML/CSS)',  40,  80, v_id);
-    CALL InsertCourse('Data Structures & Algorithms', 50, 100, v_id);
-    CALL InsertCourse('Network Fundamentals',         50, 100, v_id);
-    CALL InsertCourse('Machine Learning Basics',      60, 120, v_id);
-    CALL InsertCourse('Mobile App Development',       50, 100, v_id);
-    
+    CALL InsertCourse('Database Design & SQL',        50, 100);
+    CALL InsertCourse('Python Programming',           50, 100);
+    CALL InsertCourse('Web Technologies (HTML/CSS)',  40,  80);
+    CALL InsertCourse('Data Structures & Algorithms', 50, 100);
+    CALL InsertCourse('Network Fundamentals',         50, 100);
+    CALL InsertCourse('Machine Learning Basics',      60, 120);
+    CALL InsertCourse('Mobile App Development',       50, 100);
 END;
 $$;
 
@@ -165,7 +148,7 @@ BEGIN
     CALL AssignCourseToTrack(v_track_de, v_course_ml);
     CALL AssignCourseToTrack(v_track_de, v_course_py);
 
-    
+END
 $$;
 
 -- Verify
