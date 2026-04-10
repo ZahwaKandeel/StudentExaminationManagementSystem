@@ -1,6 +1,6 @@
 CREATE TABLE Course (
 	CourseID SERIAL PRIMARY KEY,
-	CourseName TEXT NOT NULL,
+	CourseName TEXT COLLATE arabic_icu NOT NULL,
 	MinDegree INT NOT NULL,
 	MaxDegree INT NOT NULL
 	
@@ -10,13 +10,13 @@ CREATE TABLE Course (
 
 CREATE TABLE Department(
 	DepartmentID SERIAL PRIMARY KEY,
-	DepartmentName TEXT NOT NULL,
-	Location TEXT
+	DepartmentName TEXT COLLATE arabic_icu NOT NULL,
+	Location TEXT COLLATE arabic_icu
 );
 
 CREATE TABLE Track(
 	TrackID SERIAL PRIMARY KEY,
-	TrackName TEXT NOT NULL,
+	TrackName TEXT COLLATE arabic_icu NOT NULL,
 	DepartmentID INT,
 	
 	CONSTRAINT fk_track_department

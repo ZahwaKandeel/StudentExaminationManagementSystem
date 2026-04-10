@@ -25,7 +25,7 @@ GRANT CONNECT ON DATABASE university TO Instructor;
 GRANT USAGE ON SCHEMA public TO Instructor;
 
 --=====================================================
--- Grant the ability to generate exam Generate exams
+-- Grant the ability to generate exams
 --=====================================================
 GRANT EXECUTE ON PROCEDURE -procedure name- TO Instructor
 
