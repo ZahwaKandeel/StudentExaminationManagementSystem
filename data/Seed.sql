@@ -1,3 +1,257 @@
+-- =============================================================
+-- File    : data/seed_org.sql
+-- Purpose : Seed departments, tracks, courses, instructors
+--           Uses stored procedures — no direct table inserts
+-- Run after: all schema files + all CRUD procedures loaded
+-- =============================================================
+
+-- -------------------------------------------------------
+-- RESET (development only — remove before final submission)
+-- -------------------------------------------------------
+TRUNCATE TABLE
+    Student,
+    studentanswer,
+    studentexam,
+    examquestion,
+    exam,
+    modelanswer,
+    choice,
+    question,
+    instructor_course,
+    student_track,
+    track_course,
+    instructor,
+    student,
+    track,
+    course,
+    department
+RESTART IDENTITY CASCADE;
+
+-- ========================
+-- DEPARTMENTS
+-- ========================
+DO $$
+BEGIN
+    CALL InsertDepartment('Information Technology', 'Cairo Branch');
+    CALL InsertDepartment('Computer Science',       'Alexandria Branch');
+    CALL InsertDepartment('Data Science & AI',      'Giza Branch');
+END;
+$$;
+
+
+-- ========================
+-- TRACKS
+-- ========================
+DO $$
+DECLARE
+    v_dept  INT;
+BEGIN
+    -- IT Department tracks
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Information Technology';
+    CALL InsertTrack('Web Development',    v_dept);
+    CALL InsertTrack('Network & Security', v_dept);
+
+    -- CS Department tracks
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Computer Science';
+    CALL InsertTrack('Software Engineering', v_dept);
+    CALL InsertTrack('Mobile Development',   v_dept);
+
+    -- DS & AI Department tracks
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Data Science & AI';
+    CALL InsertTrack('Machine Learning', v_dept);
+    CALL InsertTrack('Data Engineering', v_dept);
+END;
+$$;
+
+-- ========================
+-- COURSES
+-- ========================
+DO $$
+BEGIN
+    CALL InsertCourse('Database Design & SQL',        50, 100);
+    CALL InsertCourse('Python Programming',           50, 100);
+    CALL InsertCourse('Web Technologies (HTML/CSS)',  40,  80);
+    CALL InsertCourse('Data Structures & Algorithms', 50, 100);
+    CALL InsertCourse('Network Fundamentals',         50, 100);
+    CALL InsertCourse('Machine Learning Basics',      60, 120);
+    CALL InsertCourse('Mobile App Development',       50, 100);
+END;
+$$;
+
+
+
+-- ========================
+-- TRACK_COURSE (junction)
+-- ========================
+DO $$
+DECLARE
+    v_track_web     INT;
+    v_track_net     INT;
+    v_track_se      INT;
+    v_track_mob     INT;
+    v_track_ml      INT;
+    v_track_de      INT;
+
+    v_course_db     INT;
+    v_course_py     INT;
+    v_course_web    INT;
+    v_course_ds     INT;
+    v_course_nf     INT;
+    v_course_ml     INT;
+    v_course_mob    INT;
+BEGIN
+    -- Resolve all track IDs
+    SELECT trackid INTO v_track_web FROM track WHERE trackname = 'Web Development';
+    SELECT trackid INTO v_track_net FROM track WHERE trackname = 'Network & Security';
+    SELECT trackid INTO v_track_se  FROM track WHERE trackname = 'Software Engineering';
+    SELECT trackid INTO v_track_mob FROM track WHERE trackname = 'Mobile Development';
+    SELECT trackid INTO v_track_ml  FROM track WHERE trackname = 'Machine Learning';
+    SELECT trackid INTO v_track_de  FROM track WHERE trackname = 'Data Engineering';
+
+    -- Resolve all course IDs
+    SELECT courseid INTO v_course_db  FROM course WHERE coursename = 'Database Design & SQL';
+    SELECT courseid INTO v_course_py  FROM course WHERE coursename = 'Python Programming';
+    SELECT courseid INTO v_course_web FROM course WHERE coursename = 'Web Technologies (HTML/CSS)';
+    SELECT courseid INTO v_course_ds  FROM course WHERE coursename = 'Data Structures & Algorithms';
+    SELECT courseid INTO v_course_nf  FROM course WHERE coursename = 'Network Fundamentals';
+    SELECT courseid INTO v_course_ml  FROM course WHERE coursename = 'Machine Learning Basics';
+    SELECT courseid INTO v_course_mob FROM course WHERE coursename = 'Mobile App Development';
+
+    -- Web Development track
+    CALL AssignCourseToTrack(v_track_web, v_course_db);
+    CALL AssignCourseToTrack(v_track_web, v_course_py);
+    CALL AssignCourseToTrack(v_track_web, v_course_web);
+
+    -- Network & Security track
+    CALL AssignCourseToTrack(v_track_net, v_course_nf);
+    CALL AssignCourseToTrack(v_track_net, v_course_py);
+
+    -- Software Engineering track
+    CALL AssignCourseToTrack(v_track_se, v_course_db);
+    CALL AssignCourseToTrack(v_track_se, v_course_ds);
+    CALL AssignCourseToTrack(v_track_se, v_course_py);
+
+    -- Mobile Development track
+    CALL AssignCourseToTrack(v_track_mob, v_course_mob);
+    CALL AssignCourseToTrack(v_track_mob, v_course_db);
+
+    -- Machine Learning track
+    CALL AssignCourseToTrack(v_track_ml, v_course_ml);
+    CALL AssignCourseToTrack(v_track_ml, v_course_py);
+    CALL AssignCourseToTrack(v_track_ml, v_course_ds);
+
+    -- Data Engineering track
+    CALL AssignCourseToTrack(v_track_de, v_course_db);
+    CALL AssignCourseToTrack(v_track_de, v_course_ml);
+    CALL AssignCourseToTrack(v_track_de, v_course_py);
+
+END;
+$$;
+
+-- ========================
+-- INSTRUCTORS
+-- ========================
+DO $$
+DECLARE
+    v_dept  INT;
+BEGIN
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Information Technology';
+    CALL InsertInstructor('Ahmed Hassan', 'ahmed.hassan@iti.gov.eg', v_dept);
+    CALL InsertInstructor('Nour El-Din',  'nour.eldin@iti.gov.eg',  v_dept);
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Computer Science';
+    CALL InsertInstructor('Sara Mohamed', 'sara.mohamed@iti.gov.eg', v_dept);
+    CALL InsertInstructor('Mona Adel',    'mona.adel@iti.gov.eg',   v_dept);
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Data Science & AI';
+    CALL InsertInstructor('Khaled Nasser', 'khaled.nasser@iti.gov.eg', v_dept);
+    
+END;
+$$;
+
+
+-- ========================
+-- INSTRUCTOR_COURSE (junction)
+-- ========================
+DO $$
+DECLARE
+    v_ahmed     INT;
+    v_sara      INT;
+    v_khaled    INT;
+    v_nour      INT;
+    v_mona      INT;
+
+    v_course_db  INT;
+    v_course_py  INT;
+    v_course_web INT;
+    v_course_ds  INT;
+    v_course_nf  INT;
+    v_course_ml  INT;
+    v_course_mob INT;
+BEGIN
+    -- Resolve instructor IDs by email (email is UNIQUE so safe to use)
+    SELECT instructorid INTO v_ahmed  FROM instructor WHERE email = 'ahmed.hassan@iti.gov.eg';
+    SELECT instructorid INTO v_sara   FROM instructor WHERE email = 'sara.mohamed@iti.gov.eg';
+    SELECT instructorid INTO v_khaled FROM instructor WHERE email = 'khaled.nasser@iti.gov.eg';
+    SELECT instructorid INTO v_nour   FROM instructor WHERE email = 'nour.eldin@iti.gov.eg';
+    SELECT instructorid INTO v_mona   FROM instructor WHERE email = 'mona.adel@iti.gov.eg';
+
+    -- Resolve course IDs
+    SELECT courseid INTO v_course_db  FROM course WHERE coursename = 'Database Design & SQL';
+    SELECT courseid INTO v_course_py  FROM course WHERE coursename = 'Python Programming';
+    SELECT courseid INTO v_course_web FROM course WHERE coursename = 'Web Technologies (HTML/CSS)';
+    SELECT courseid INTO v_course_ds  FROM course WHERE coursename = 'Data Structures & Algorithms';
+    SELECT courseid INTO v_course_nf  FROM course WHERE coursename = 'Network Fundamentals';
+    SELECT courseid INTO v_course_ml  FROM course WHERE coursename = 'Machine Learning Basics';
+    SELECT courseid INTO v_course_mob FROM course WHERE coursename = 'Mobile App Development';
+
+    -- Ahmed Hassan: DB + Networks
+    CALL AssignInstructorToCourse(v_ahmed, v_course_db);
+    CALL AssignInstructorToCourse(v_ahmed, v_course_nf);
+
+    -- Sara Mohamed: Python + Data Structures
+    CALL AssignInstructorToCourse(v_sara, v_course_py);
+    CALL AssignInstructorToCourse(v_sara, v_course_ds);
+
+    -- Khaled Nasser: ML + DB
+    CALL AssignInstructorToCourse(v_khaled, v_course_ml);
+    CALL AssignInstructorToCourse(v_khaled, v_course_db);
+
+    -- Nour El-Din: Web Technologies + Python
+    CALL AssignInstructorToCourse(v_nour, v_course_web);
+    CALL AssignInstructorToCourse(v_nour, v_course_py);
+
+    -- Mona Adel: Mobile + Data Structures
+    CALL AssignInstructorToCourse(v_mona, v_course_mob);
+    CALL AssignInstructorToCourse(v_mona, v_course_ds);
+
+    
+END;
+$$;
+
+-- ========================
+-- FINAL SUMMARY
+-- ========================
+SELECT 'Departments'             AS entity, COUNT(*) AS total FROM department
+UNION ALL
+SELECT 'Tracks',                            COUNT(*) FROM track
+UNION ALL
+SELECT 'Courses',                           COUNT(*) FROM course
+UNION ALL
+SELECT 'Track-Course links',                COUNT(*) FROM track_course
+UNION ALL
+SELECT 'Instructors',                       COUNT(*) FROM instructor
+UNION ALL
+SELECT 'Instructor-Course links',           COUNT(*) FROM instructor_course;
+
+
+--=============================================================================================
+--   Seeding the questions
+--=============================================================================================
 DO $$
 DECLARE
     v_qid INT;
@@ -485,3 +739,33 @@ END;
 $$;
 
 
+-- ==============================================
+-- Students samples
+-- ==============================================
+
+-- Insert students using InsertStudent procedure
+CALL InsertStudent('Ayman Mohamed',   'ayman.mohamed@gmail.com',       '+201555853992');
+CALL InsertStudent('Sarah Ahmed',     'sarah.ahmed@yahoo.com',         '+201022334455');
+CALL InsertStudent('Omar Hassan',     'omar.hassan@outlook.com',       '+201144556677');
+CALL InsertStudent('Laila Mahmoud',   'laila.m@gmail.com',             '+201288990011');
+CALL InsertStudent('Youssef Ibrahim', 'youssef.ibrahim@protonmail.com','+201555667788');
+CALL InsertStudent('Mariam Ali',      'mariam.ali@gmail.com',          '+201011223344');
+CALL InsertStudent('Khaled Said',     'khaled.said@icloud.com',        '+201199887766');
+CALL InsertStudent('Nour El-Din',     'nour.eldin@gmail.com',          '+201233445566');
+CALL InsertStudent('Hana Tarek',      'hana.tarek@yahoo.com',          '+201566778899');
+CALL InsertStudent('Ziad Amr',        'ziad.amr@gmail.com',            '+201088776655');
+CALL InsertStudent('Mona Zaki',       'mona.zaki@gmail.com',           '+201155443322');
+CALL InsertStudent('Ahmed Fouad',     'ahmed.fouad@outlook.com',       '+201266554433');
+CALL InsertStudent('Salma Gamal',     'salma.gamal@gmail.com',         '+201577889900');
+CALL InsertStudent('Mostafa Bakr',    'mostafa.bakr@yahoo.com',        '+201033445566');
+CALL InsertStudent('Reem Adel',       'reem.adel@gmail.com',           '+201122112233');
+CALL InsertStudent('Fady Nessim',     'fady.nessim@gmail.com',         '+201244556677');
+CALL InsertStudent('Dina Samir',      'dina.samir@icloud.com',         '+201599887744');
+CALL InsertStudent('Amir Raafat',     'amir.raafat@gmail.com',         '+201066778899');
+CALL InsertStudent('Nada Yasser',     'nada.yasser@yahoo.com',         '+201144332211');
+CALL InsertStudent('Sherif Mounir',   'sherif.mounir@gmail.com',       '+201211009988');
+CALL InsertStudent('Habiba Hassan',   'habiba.h@outlook.com',          '+201533221100');
+CALL InsertStudent('Kareem Walid',    'kareem.walid@gmail.com',        '+201077665544');
+CALL InsertStudent('Farah Ismail',    'farah.ismail@gmail.com',        '+201155664433');
+CALL InsertStudent('Tarek Aziz',      'tarek.aziz@yahoo.com',          '+201299881122');
+CALL InsertStudent('Yasmine Galal',   'yasmine.galal@gmail.com',       '+201588774411');
