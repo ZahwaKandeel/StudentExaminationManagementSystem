@@ -150,47 +150,27 @@ BEGIN
 END;
 $$;
 
--- Verify
-SELECT
-    t.trackname,
-    COUNT(tc.courseid) AS course_count
-FROM track t
-JOIN track_course tc ON t.trackid = tc.trackid
-GROUP BY t.trackname
-ORDER BY t.trackname;
-
 -- ========================
 -- INSTRUCTORS
 -- ========================
 DO $$
 DECLARE
-    v_id    INT;
     v_dept  INT;
 BEGIN
     SELECT departmentid INTO v_dept
     FROM department WHERE departmentname = 'Information Technology';
-    CALL InsertInstructor('Ahmed Hassan', 'ahmed.hassan@iti.gov.eg', v_dept, v_id);
-    CALL InsertInstructor('Nour El-Din',  'nour.eldin@iti.gov.eg',  v_dept, v_id);
+    CALL InsertInstructor('Ahmed Hassan', 'ahmed.hassan@iti.gov.eg', v_dept);
+    CALL InsertInstructor('Nour El-Din',  'nour.eldin@iti.gov.eg',  v_dept);
     SELECT departmentid INTO v_dept
     FROM department WHERE departmentname = 'Computer Science';
-    CALL InsertInstructor('Sara Mohamed', 'sara.mohamed@iti.gov.eg', v_dept, v_id);
-    CALL InsertInstructor('Mona Adel',    'mona.adel@iti.gov.eg',   v_dept, v_id);
+    CALL InsertInstructor('Sara Mohamed', 'sara.mohamed@iti.gov.eg', v_dept);
+    CALL InsertInstructor('Mona Adel',    'mona.adel@iti.gov.eg',   v_dept);
     SELECT departmentid INTO v_dept
     FROM department WHERE departmentname = 'Data Science & AI';
-    CALL InsertInstructor('Khaled Nasser', 'khaled.nasser@iti.gov.eg', v_dept, v_id);
+    CALL InsertInstructor('Khaled Nasser', 'khaled.nasser@iti.gov.eg', v_dept);
     
 END;
 $$;
-
--- Verify
-SELECT
-    i.instructorid,
-    i.name,
-    i.email,
-    d.departmentname
-FROM instructor i
-JOIN department d ON i.departmentno = d.departmentid
-ORDER BY i.instructorid;
 
 
 -- ========================
@@ -251,15 +231,6 @@ BEGIN
     
 END;
 $$;
-
--- Verify
-SELECT
-    i.name       AS instructor,
-    c.coursename AS course
-FROM instructor i
-JOIN instructor_course ic ON i.instructorid = ic.instructorid
-JOIN course c             ON ic.courseid    = c.courseid
-ORDER BY i.name, c.coursename;
 
 -- ========================
 -- FINAL SUMMARY

@@ -34,7 +34,7 @@ CALL InsertOption(v_qid, 'define', 4, v_o4);
 CALL SetModelAnswer(v_qid, v_o1); -- def
 
 -- Q2 MCQ
-CALL InsertQuestion(v_qid,v_c_py, 'What is the output of print(2 ** 3) in Python?', 'MCQ', 1);
+CALL InsertQuestion(v_qid, v_c_py, 'What is the output of print(2 ** 3) in Python?', 'MCQ', 1);
 CALL InsertOption(v_qid, '6', 1, v_o1);
 CALL InsertOption(v_qid, '8', 2, v_o2);
 CALL InsertOption(v_qid, '9', 3, v_o3);
@@ -86,7 +86,7 @@ CALL InsertOption(v_qid, 'foreach loop',  4, v_o4);
 CALL SetModelAnswer(v_qid, v_o3); -- do-while
 
 -- Q9 MCQ
-CALL InsertQuestion(v_c_py, 'What is the correct way to open a file for reading in Python?', 'MCQ', 1);
+CALL InsertQuestion(v_qid, v_c_py, 'What is the correct way to open a file for reading in Python?', 'MCQ', 1);
 CALL InsertOption(v_qid, 'open("file.txt", "w")', 1, v_o1);
 CALL InsertOption(v_qid, 'open("file.txt", "r")', 2, v_o2);
 CALL InsertOption(v_qid, 'open("file.txt", "a")', 3, v_o3);
@@ -94,7 +94,7 @@ CALL InsertOption(v_qid, 'open("file.txt", "x")', 4, v_o4);
 CALL SetModelAnswer(v_qid, v_o2); -- "r"
 
 -- Q10 TF
-CALL InsertQuestion(v_qid, v_c_py, 'Python is a compiled programming language.', 'TF', 1, v_qid);
+CALL InsertQuestion(v_qid, v_c_py, 'Python is a compiled programming language.', 'TF', 1);
 CALL InsertOption(v_qid, 'True',  1, v_o1);
 CALL InsertOption(v_qid, 'False', 2, v_o2);
 CALL SetModelAnswer(v_qid, v_o2); -- False (it is interpreted)
@@ -234,7 +234,7 @@ CALL InsertOption(v_qid, 'False', 2, v_o2);
 CALL SetModelAnswer(v_qid, v_o2); -- False (full binary tree means every node has 0 or 2 children)
 
 -- Q28 MCQ
-CALL InsertQuestion(v_c_dsa, 'What is the worst-case time complexity of QuickSort?', 'MCQ', 2, v_qid);
+CALL InsertQuestion(v_qid, v_c_dsa, 'What is the worst-case time complexity of QuickSort?', 'MCQ', 2);
 CALL InsertOption(v_qid, 'O(n log n)', 1, v_o1);
 CALL InsertOption(v_qid, 'O(n)',       2, v_o2);
 CALL InsertOption(v_qid, 'O(n²)',      3, v_o3);
