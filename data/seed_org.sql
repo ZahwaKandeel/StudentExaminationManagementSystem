@@ -1,11 +1,13 @@
 -- =============================================================
 -- File    : data/seed_org.sql
 -- Purpose : Seed departments, tracks, courses, instructors
--- Run after: all schema files + 00_collation.sql
+--           Uses stored procedures — no direct table inserts
+-- Run after: all schema files + all CRUD procedures loaded
 -- =============================================================
 
--- Clear existing data first (safe for development resets)
--- Order matters: delete child tables before parent tables
+-- -------------------------------------------------------
+-- RESET (development only — remove before final submission)
+-- -------------------------------------------------------
 TRUNCATE TABLE
     studentanswer,
     studentexam,
@@ -27,38 +29,46 @@ RESTART IDENTITY CASCADE;
 -- ========================
 -- DEPARTMENTS
 -- ========================
-
-INSERT INTO department (departmentname, location) VALUES
-    ('Information Technology',          'Cairo Branch'),
-    ('Computer Science',                'Alexandria Branch'),
-    ('Data Science & AI',               'Giza Branch');
+DO $$
+DECLARE
+    v_id INT;
+BEGIN
+    CALL InsertDepartment('Information Technology', 'Cairo Branch',       v_id);
+    CALL InsertDepartment('Computer Science',       'Alexandria Branch',  v_id);
+    CALL InsertDepartment('Data Science & AI',      'Giza Branch',        v_id);
+    
+END;
+$$;
 
 -- Verify
 SELECT departmentid, departmentname, location FROM department;
 
-
 -- ========================
 -- TRACKS
 -- ========================
-
-INSERT INTO track (trackname, departmentid) VALUES
+DO $$
+DECLARE
+    v_id    INT;
+    v_dept  INT;
+BEGIN
     -- IT Department tracks
-    ('Web Development',
-        (SELECT departmentid FROM department WHERE departmentname = 'Information Technology')),
-    ('Network & Security',
-        (SELECT departmentid FROM department WHERE departmentname = 'Information Technology')),
-
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Information Technology';
+    CALL InsertTrack('Web Development',   v_dept, v_id);
+    CALL InsertTrack('Network & Security', v_dept, v_id);
     -- CS Department tracks
-    ('Software Engineering',
-        (SELECT departmentid FROM department WHERE departmentname = 'Computer Science')),
-    ('Mobile Development',
-        (SELECT departmentid FROM department WHERE departmentname = 'Computer Science')),
-
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Computer Science';
+    CALL InsertTrack('Software Engineering', v_dept, v_id);
+    CALL InsertTrack('Mobile Development', v_dept, v_id);
     -- DS & AI Department tracks
-    ('Machine Learning',
-        (SELECT departmentid FROM department WHERE departmentname = 'Data Science & AI')),
-    ('Data Engineering',
-        (SELECT departmentid FROM department WHERE departmentname = 'Data Science & AI'));
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Data Science & AI';
+    CALL InsertTrack('Machine Learning', v_dept, v_id);
+    CALL InsertTrack('Data Engineering', v_dept, v_id);
+    
+END;
+$$;
 
 -- Verify
 SELECT
@@ -72,17 +82,20 @@ ORDER BY d.departmentid, t.trackid;
 -- ========================
 -- COURSES
 -- ========================
--- mindegree = minimum passing grade
--- maxdegree = total marks available
-
-INSERT INTO course (coursename, mindegree, maxdegree) VALUES
-    ('Database Design & SQL',        50, 100),
-    ('Python Programming',           50, 100),
-    ('Web Technologies (HTML/CSS)',  40,  80),
-    ('Data Structures & Algorithms', 50, 100),
-    ('Network Fundamentals',         50, 100),
-    ('Machine Learning Basics',      60, 120),
-    ('Mobile App Development',       50, 100);
+DO $$
+DECLARE
+    v_id INT;
+BEGIN
+    CALL InsertCourse('Database Design & SQL',        50, 100, v_id);
+    CALL InsertCourse('Python Programming',           50, 100, v_id);
+    CALL InsertCourse('Web Technologies (HTML/CSS)',  40,  80, v_id);
+    CALL InsertCourse('Data Structures & Algorithms', 50, 100, v_id);
+    CALL InsertCourse('Network Fundamentals',         50, 100, v_id);
+    CALL InsertCourse('Machine Learning Basics',      60, 120, v_id);
+    CALL InsertCourse('Mobile App Development',       50, 100, v_id);
+    
+END;
+$$;
 
 -- Verify
 SELECT courseid, coursename, mindegree, maxdegree FROM course;
@@ -90,53 +103,72 @@ SELECT courseid, coursename, mindegree, maxdegree FROM course;
 -- ========================
 -- TRACK_COURSE (junction)
 -- ========================
+DO $$
+DECLARE
+    v_track_web     INT;
+    v_track_net     INT;
+    v_track_se      INT;
+    v_track_mob     INT;
+    v_track_ml      INT;
+    v_track_de      INT;
 
-INSERT INTO track_course (trackid, courseid) VALUES
+    v_course_db     INT;
+    v_course_py     INT;
+    v_course_web    INT;
+    v_course_ds     INT;
+    v_course_nf     INT;
+    v_course_ml     INT;
+    v_course_mob    INT;
+BEGIN
+    -- Resolve all track IDs
+    SELECT trackid INTO v_track_web FROM track WHERE trackname = 'Web Development';
+    SELECT trackid INTO v_track_net FROM track WHERE trackname = 'Network & Security';
+    SELECT trackid INTO v_track_se  FROM track WHERE trackname = 'Software Engineering';
+    SELECT trackid INTO v_track_mob FROM track WHERE trackname = 'Mobile Development';
+    SELECT trackid INTO v_track_ml  FROM track WHERE trackname = 'Machine Learning';
+    SELECT trackid INTO v_track_de  FROM track WHERE trackname = 'Data Engineering';
+
+    -- Resolve all course IDs
+    SELECT courseid INTO v_course_db  FROM course WHERE coursename = 'Database Design & SQL';
+    SELECT courseid INTO v_course_py  FROM course WHERE coursename = 'Python Programming';
+    SELECT courseid INTO v_course_web FROM course WHERE coursename = 'Web Technologies (HTML/CSS)';
+    SELECT courseid INTO v_course_ds  FROM course WHERE coursename = 'Data Structures & Algorithms';
+    SELECT courseid INTO v_course_nf  FROM course WHERE coursename = 'Network Fundamentals';
+    SELECT courseid INTO v_course_ml  FROM course WHERE coursename = 'Machine Learning Basics';
+    SELECT courseid INTO v_course_mob FROM course WHERE coursename = 'Mobile App Development';
+
     -- Web Development track
-    ((SELECT trackid FROM track WHERE trackname = 'Web Development'),
-     (SELECT courseid FROM course WHERE coursename = 'Database Design & SQL')),
-    ((SELECT trackid FROM track WHERE trackname = 'Web Development'),
-     (SELECT courseid FROM course WHERE coursename = 'Python Programming')),
-    ((SELECT trackid FROM track WHERE trackname = 'Web Development'),
-     (SELECT courseid FROM course WHERE coursename = 'Web Technologies (HTML/CSS)')),
+    CALL AssignCourseToTrack(v_track_web, v_course_db);
+    CALL AssignCourseToTrack(v_track_web, v_course_py);
+    CALL AssignCourseToTrack(v_track_web, v_course_web);
 
     -- Network & Security track
-    ((SELECT trackid FROM track WHERE trackname = 'Network & Security'),
-     (SELECT courseid FROM course WHERE coursename = 'Network Fundamentals')),
-    ((SELECT trackid FROM track WHERE trackname = 'Network & Security'),
-     (SELECT courseid FROM course WHERE coursename = 'Python Programming')),
+    CALL AssignCourseToTrack(v_track_net, v_course_nf);
+    CALL AssignCourseToTrack(v_track_net, v_course_py);
 
     -- Software Engineering track
-    ((SELECT trackid FROM track WHERE trackname = 'Software Engineering'),
-     (SELECT courseid FROM course WHERE coursename = 'Database Design & SQL')),
-    ((SELECT trackid FROM track WHERE trackname = 'Software Engineering'),
-     (SELECT courseid FROM course WHERE coursename = 'Data Structures & Algorithms')),
-    ((SELECT trackid FROM track WHERE trackname = 'Software Engineering'),
-     (SELECT courseid FROM course WHERE coursename = 'Python Programming')),
+    CALL AssignCourseToTrack(v_track_se, v_course_db);
+    CALL AssignCourseToTrack(v_track_se, v_course_ds);
+    CALL AssignCourseToTrack(v_track_se, v_course_py);
 
     -- Mobile Development track
-    ((SELECT trackid FROM track WHERE trackname = 'Mobile Development'),
-     (SELECT courseid FROM course WHERE coursename = 'Mobile App Development')),
-    ((SELECT trackid FROM track WHERE trackname = 'Mobile Development'),
-     (SELECT courseid FROM course WHERE coursename = 'Database Design & SQL')),
+    CALL AssignCourseToTrack(v_track_mob, v_course_mob);
+    CALL AssignCourseToTrack(v_track_mob, v_course_db);
 
     -- Machine Learning track
-    ((SELECT trackid FROM track WHERE trackname = 'Machine Learning'),
-     (SELECT courseid FROM course WHERE coursename = 'Machine Learning Basics')),
-    ((SELECT trackid FROM track WHERE trackname = 'Machine Learning'),
-     (SELECT courseid FROM course WHERE coursename = 'Python Programming')),
-    ((SELECT trackid FROM track WHERE trackname = 'Machine Learning'),
-     (SELECT courseid FROM course WHERE coursename = 'Data Structures & Algorithms')),
+    CALL AssignCourseToTrack(v_track_ml, v_course_ml);
+    CALL AssignCourseToTrack(v_track_ml, v_course_py);
+    CALL AssignCourseToTrack(v_track_ml, v_course_ds);
 
     -- Data Engineering track
-    ((SELECT trackid FROM track WHERE trackname = 'Data Engineering'),
-     (SELECT courseid FROM course WHERE coursename = 'Database Design & SQL')),
-    ((SELECT trackid FROM track WHERE trackname = 'Data Engineering'),
-     (SELECT courseid FROM course WHERE coursename = 'Machine Learning Basics')),
-    ((SELECT trackid FROM track WHERE trackname = 'Data Engineering'),
-     (SELECT courseid FROM course WHERE coursename = 'Python Programming'));
+    CALL AssignCourseToTrack(v_track_de, v_course_db);
+    CALL AssignCourseToTrack(v_track_de, v_course_ml);
+    CALL AssignCourseToTrack(v_track_de, v_course_py);
 
--- Verify: how many courses per track
+    
+$$;
+
+-- Verify
 SELECT
     t.trackname,
     COUNT(tc.courseid) AS course_count
@@ -148,27 +180,25 @@ ORDER BY t.trackname;
 -- ========================
 -- INSTRUCTORS
 -- ========================
-
-INSERT INTO instructor (name, email, departmentno) VALUES
-    ('Ahmed Hassan',
-     'ahmed.hassan@iti.gov.eg',
-     (SELECT departmentid FROM department WHERE departmentname = 'Information Technology')),
-
-    ('Sara Mohamed',
-     'sara.mohamed@iti.gov.eg',
-     (SELECT departmentid FROM department WHERE departmentname = 'Computer Science')),
-
-    ('Khaled Nasser',
-     'khaled.nasser@iti.gov.eg',
-     (SELECT departmentid FROM department WHERE departmentname = 'Data Science & AI')),
-
-    ('Nour El-Din',
-     'nour.eldin@iti.gov.eg',
-     (SELECT departmentid FROM department WHERE departmentname = 'Information Technology')),
-
-    ('Mona Adel',
-     'mona.adel@iti.gov.eg',
-     (SELECT departmentid FROM department WHERE departmentname = 'Computer Science'));
+DO $$
+DECLARE
+    v_id    INT;
+    v_dept  INT;
+BEGIN
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Information Technology';
+    CALL InsertInstructor('Ahmed Hassan', 'ahmed.hassan@iti.gov.eg', v_dept, v_id);
+    CALL InsertInstructor('Nour El-Din',  'nour.eldin@iti.gov.eg',  v_dept, v_id);
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Computer Science';
+    CALL InsertInstructor('Sara Mohamed', 'sara.mohamed@iti.gov.eg', v_dept, v_id);
+    CALL InsertInstructor('Mona Adel',    'mona.adel@iti.gov.eg',   v_dept, v_id);
+    SELECT departmentid INTO v_dept
+    FROM department WHERE departmentname = 'Data Science & AI';
+    CALL InsertInstructor('Khaled Nasser', 'khaled.nasser@iti.gov.eg', v_dept, v_id);
+    
+END;
+$$;
 
 -- Verify
 SELECT
@@ -180,60 +210,86 @@ FROM instructor i
 JOIN department d ON i.departmentno = d.departmentid
 ORDER BY i.instructorid;
 
+
 -- ========================
 -- INSTRUCTOR_COURSE (junction)
 -- ========================
+DO $$
+DECLARE
+    v_ahmed     INT;
+    v_sara      INT;
+    v_khaled    INT;
+    v_nour      INT;
+    v_mona      INT;
 
-INSERT INTO instructor_course (instructorid, courseid) VALUES
-    -- Ahmed Hassan teaches DB and Networks
-    ((SELECT instructorid FROM instructor WHERE email = 'ahmed.hassan@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Database Design & SQL')),
-    ((SELECT instructorid FROM instructor WHERE email = 'ahmed.hassan@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Network Fundamentals')),
+    v_course_db  INT;
+    v_course_py  INT;
+    v_course_web INT;
+    v_course_ds  INT;
+    v_course_nf  INT;
+    v_course_ml  INT;
+    v_course_mob INT;
+BEGIN
+    -- Resolve instructor IDs by email (email is UNIQUE so safe to use)
+    SELECT instructorid INTO v_ahmed  FROM instructor WHERE email = 'ahmed.hassan@iti.gov.eg';
+    SELECT instructorid INTO v_sara   FROM instructor WHERE email = 'sara.mohamed@iti.gov.eg';
+    SELECT instructorid INTO v_khaled FROM instructor WHERE email = 'khaled.nasser@iti.gov.eg';
+    SELECT instructorid INTO v_nour   FROM instructor WHERE email = 'nour.eldin@iti.gov.eg';
+    SELECT instructorid INTO v_mona   FROM instructor WHERE email = 'mona.adel@iti.gov.eg';
 
-    -- Sara Mohamed teaches Python and Data Structures
-    ((SELECT instructorid FROM instructor WHERE email = 'sara.mohamed@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Python Programming')),
-    ((SELECT instructorid FROM instructor WHERE email = 'sara.mohamed@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Data Structures & Algorithms')),
+    -- Resolve course IDs
+    SELECT courseid INTO v_course_db  FROM course WHERE coursename = 'Database Design & SQL';
+    SELECT courseid INTO v_course_py  FROM course WHERE coursename = 'Python Programming';
+    SELECT courseid INTO v_course_web FROM course WHERE coursename = 'Web Technologies (HTML/CSS)';
+    SELECT courseid INTO v_course_ds  FROM course WHERE coursename = 'Data Structures & Algorithms';
+    SELECT courseid INTO v_course_nf  FROM course WHERE coursename = 'Network Fundamentals';
+    SELECT courseid INTO v_course_ml  FROM course WHERE coursename = 'Machine Learning Basics';
+    SELECT courseid INTO v_course_mob FROM course WHERE coursename = 'Mobile App Development';
 
-    -- Khaled Nasser teaches ML and Data Engineering courses
-    ((SELECT instructorid FROM instructor WHERE email = 'khaled.nasser@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Machine Learning Basics')),
-    ((SELECT instructorid FROM instructor WHERE email = 'khaled.nasser@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Database Design & SQL')),
+    -- Ahmed Hassan: DB + Networks
+    CALL AssignInstructorToCourse(v_ahmed, v_course_db);
+    CALL AssignInstructorToCourse(v_ahmed, v_course_nf);
 
-    -- Nour El-Din teaches Web Technologies
-    ((SELECT instructorid FROM instructor WHERE email = 'nour.eldin@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Web Technologies (HTML/CSS)')),
-    ((SELECT instructorid FROM instructor WHERE email = 'nour.eldin@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Python Programming')),
+    -- Sara Mohamed: Python + Data Structures
+    CALL AssignInstructorToCourse(v_sara, v_course_py);
+    CALL AssignInstructorToCourse(v_sara, v_course_ds);
 
-    -- Mona Adel teaches Mobile Development
-    ((SELECT instructorid FROM instructor WHERE email = 'mona.adel@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Mobile App Development')),
-    ((SELECT instructorid FROM instructor WHERE email = 'mona.adel@iti.gov.eg'),
-     (SELECT courseid FROM course WHERE coursename = 'Data Structures & Algorithms'));
+    -- Khaled Nasser: ML + DB
+    CALL AssignInstructorToCourse(v_khaled, v_course_ml);
+    CALL AssignInstructorToCourse(v_khaled, v_course_db);
 
--- Verify: courses per instructor
+    -- Nour El-Din: Web Technologies + Python
+    CALL AssignInstructorToCourse(v_nour, v_course_web);
+    CALL AssignInstructorToCourse(v_nour, v_course_py);
+
+    -- Mona Adel: Mobile + Data Structures
+    CALL AssignInstructorToCourse(v_mona, v_course_mob);
+    CALL AssignInstructorToCourse(v_mona, v_course_ds);
+
+    
+END;
+$$;
+
+-- Verify
 SELECT
-    i.name          AS instructor,
-    c.coursename    AS course
+    i.name       AS instructor,
+    c.coursename AS course
 FROM instructor i
 JOIN instructor_course ic ON i.instructorid = ic.instructorid
 JOIN course c             ON ic.courseid    = c.courseid
 ORDER BY i.name, c.coursename;
 
--- Full summary check
-SELECT
-    'Departments' AS entity, COUNT(*) AS total FROM department
+-- ========================
+-- FINAL SUMMARY
+-- ========================
+SELECT 'Departments'             AS entity, COUNT(*) AS total FROM department
 UNION ALL
-SELECT 'Tracks',      COUNT(*) FROM track
+SELECT 'Tracks',                            COUNT(*) FROM track
 UNION ALL
-SELECT 'Courses',     COUNT(*) FROM course
+SELECT 'Courses',                           COUNT(*) FROM course
 UNION ALL
-SELECT 'Track-Course links',      COUNT(*) FROM track_course
+SELECT 'Track-Course links',                COUNT(*) FROM track_course
 UNION ALL
-SELECT 'Instructors', COUNT(*) FROM instructor
+SELECT 'Instructors',                       COUNT(*) FROM instructor
 UNION ALL
-SELECT 'Instructor-Course links', COUNT(*) FROM instructor_course;
+SELECT 'Instructor-Course links',           COUNT(*) FROM instructor_course;
