@@ -32,4 +32,4 @@ EXCEPTION
 WHEN OTHERS THEN
     RAISE;
 END;
-$$;
+$$;-- Example call, replace 1 with actual studentexamid to test

@@ -62,11 +62,11 @@ BEGIN
 
     -- Generate an exam for course 1 with 3 MCQ + 2 TF
     CALL GenerateExam(
-        p_courseid  := 1,
-        p_examname  := 'DB Midterm Test 1',
-        p_nummcq    := 3,
-        p_numtf     := 2,
-        new_examid  := v_examid
+        1,
+        'DB Midterm Test 1',
+        3,
+        2,
+        v_examid
     );
 
     RAISE NOTICE 'Exam created. ID: %', v_examid;
@@ -162,11 +162,11 @@ BEGIN
     BEGIN
         -- Request 999 MCQ — impossible to satisfy
         CALL GenerateExam(
-            p_courseid  := 1,
-            p_examname  := 'Should Not Exist',
-            p_nummcq    := 999,
-            p_numtf     := 0,
-            new_examid  := v_examid
+            1,
+            'Should Not Exist',
+            999,
+            0,
+            v_examid
         );
 
         -- If we reach this line the procedure did not raise — that is a bug

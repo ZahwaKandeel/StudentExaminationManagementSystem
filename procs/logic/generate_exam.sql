@@ -14,11 +14,11 @@
 --============================================================================
 
 
-CREATE OR REPLACE PROCEDURE GenerateExam(e_CourseID INT, e_ExamName TEXT, e_NumMCQ INT, e_NumTF INT)
+CREATE OR REPLACE PROCEDURE GenerateExam(e_CourseID INT, e_ExamName TEXT, e_NumMCQ INT, e_NumTF INT, OUT new_examid INT)
 LANGUAGE plpgsql
 AS $$
 DECLARE     
-	v_examid INT; v_total INT; v_available_mcq INT;
+	v_total INT; v_available_mcq INT;
     v_available_tf INT; v_counter INT := 1; rec RECORD;
 BEGIN
 	v_total := e_NumMCQ + e_NumTF;
@@ -39,7 +39,7 @@ BEGIN
     RAISE EXCEPTION 'Not enough questions available';
     END IF;
 
-	CALL insertExam(e_ExamName, e_CourseID, v_total, v_examid );
+	CALL insertExam(e_ExamName, e_CourseID, v_total, new_examid);
 
 
 	FOR rec IN 
@@ -47,7 +47,7 @@ BEGIN
     WHERE courseid = e_CourseID AND type = 'MCQ'
     ORDER BY RANDOM() LIMIT e_NumMCQ
     LOOP
-    CALL insert_examquestion(v_examid, rec.questionid, v_counter);
+    CALL insert_examquestion(new_examid, rec.questionid, v_counter);
     v_counter := v_counter + 1;
     END LOOP;
 
@@ -56,7 +56,7 @@ BEGIN
     WHERE courseid = e_CourseID AND type = 'TF'
     ORDER BY RANDOM() LIMIT e_NumTF
     LOOP
-    CALL insert_examquestion(v_examid, rec.questionid, v_counter);
+    CALL insert_examquestion(new_examid, rec.questionid, v_counter);
     v_counter := v_counter + 1;
     END LOOP;
 
