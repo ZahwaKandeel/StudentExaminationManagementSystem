@@ -17,10 +17,12 @@ BEGIN
     RAISE EXCEPTION 'StudentExam with ID % does not exist', e_StudentExamID;
     END IF;
 
-    SELECT SUM(*) INTO v_total_grade
+    SELECT SUM(q.points) INTO v_total_grade
     FROM studentanswer sa
     JOIN modelanswer ma
         ON sa.questionid = ma.questionid
+    JOIN question q
+        ON sa.questionid = q.questionid
     WHERE sa.studentexamid = e_StudentExamID
     AND sa.chosenoptionid = ma.correctoptionid;
 
