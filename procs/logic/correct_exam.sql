@@ -17,7 +17,7 @@ BEGIN
     RAISE EXCEPTION 'StudentExam with ID % does not exist', e_StudentExamID;
     END IF;
 
-    SELECT COUNT(*) INTO v_total_grade
+    SELECT SUM(*) INTO v_total_grade
     FROM studentanswer sa
     JOIN modelanswer ma
         ON sa.questionid = ma.questionid

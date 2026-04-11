@@ -39,9 +39,8 @@ BEGIN
     RAISE EXCEPTION 'Not enough questions available';
     END IF;
 
-	CALL insertExam(e_ExamName, e_CourseID, v_total);
+	CALL insertExam(e_ExamName, e_CourseID, v_total, v_examid );
 
-	SELECT MAX(examid) INTO v_examid FROM exam;
 
 	FOR rec IN 
 	SELECT questionid FROM question
