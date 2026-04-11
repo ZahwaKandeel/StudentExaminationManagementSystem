@@ -12,7 +12,7 @@
 --      end_time : exam end time
 --=========================================
 
-CREATE OR REPLACE PROCEDURE InsertStudentExam(OUT sx_id INT,s_id INT, ex_id INT, start_time TIMESTAMP , end_time TIMESTAMP DEFAULT NULL )
+CREATE OR REPLACE PROCEDURE InsertStudentExam(OUT sx_id INT,s_id INT, ex_id INT, start_time TIMESTAMPTZ, end_time TIMESTAMPTZ DEFAULT NULL )
 LANGUAGE plpgsql
 AS $$
 BEGIN

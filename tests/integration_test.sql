@@ -239,12 +239,12 @@ BEGIN
 
     -- Submit the exam
     CALL SubmitExamAnswers(
-        p_studentid     := v_studentid,
-        p_examid        := v_examid,
-        p_starttime     := NOW() - INTERVAL '30 minutes',
-        p_endtime       := NOW(),
-        p_answers       := v_answers_json,
-        new_studentexamid := v_studentexamid
+        v_studentid,
+        v_examid,
+        NOW() - INTERVAL '30 minutes',
+        NOW(),
+        v_answers_json,
+        v_studentexamid
     );
 
     RAISE NOTICE 'StudentExam created. ID: %', v_studentexamid;

@@ -29,7 +29,7 @@ CREATE OR REPLACE PROCEDURE SubmitExamAnswers(s_id  INT,ex_id  INT,start_time  T
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    QuestionID    INT;
+    v_QuestionID    INT;
     ChosenOptionID INT;
     Answer        JSONB;
 BEGIN
@@ -51,7 +51,7 @@ BEGIN
     -- Parse JSONB and insert each answer
     FOR Answer IN SELECT jsonb_array_elements(in_answer)
     LOOP
-        QuestionID    := (Answer->>'question_id')::INT;
+        v_QuestionID    := (Answer->>'question_id')::INT;
         ChosenOptionID := (Answer->>'chosen_option_id')::INT;
 
         -- Validate that the chosen option exists
@@ -62,12 +62,12 @@ BEGIN
         -- Validate that the chosen option belongs to the specified question
         IF NOT EXISTS (
             SELECT 1 FROM choice
-            WHERE questionid = QuestionID AND optionid = ChosenOptionID
+            WHERE questionid = v_QuestionID AND optionid = ChosenOptionID
         ) THEN
             RAISE EXCEPTION 'Chosen option % does not belong to question %.', ChosenOptionID, QuestionID;
         END IF;
 
-        CALL InsertStudentAnswer(SX_id, questionid, chosenoptionid );
+        CALL InsertStudentAnswer(SX_id, v_QuestionID, chosenoptionid );
     END LOOP;
 
 END;
