@@ -25,11 +25,10 @@
 --		COMMIT;
 --=========================================
 
-CREATE OR REPLACE PROCEDURE SubmitExamAnswers(s_id  INT,ex_id  INT,start_time   TIMESTAMP,end_time  TIMESTAMP,in_answer JSONB,INOUT result  REFCURSOR)
+CREATE OR REPLACE PROCEDURE SubmitExamAnswers(s_id  INT,ex_id  INT,start_time  TIMESTAMPTZ,end_time  TIMESTAMPTZ,in_answer JSONB,OUT SX_id INT)
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    StudentExamID INT;
     QuestionID    INT;
     ChosenOptionID INT;
     Answer        JSONB;
@@ -47,7 +46,7 @@ BEGIN
         RAISE EXCEPTION 'End time cant be lower than Start time';
     END IF;
 
-    CALL InsertStudentExam(StudentExamID, s_id, ex_id, start_time ,end_time );
+    CALL InsertStudentExam(SX_id, s_id, ex_id, start_time ,end_time );
 
     -- Parse JSONB and insert each answer
     FOR Answer IN SELECT jsonb_array_elements(in_answer)
@@ -68,13 +67,8 @@ BEGIN
             RAISE EXCEPTION 'Chosen option % does not belong to question %.', ChosenOptionID, QuestionID;
         END IF;
 
-        CALL InsertStudentAnswer(studentexamid, questionid, chosenoptionid );
+        CALL InsertStudentAnswer(SX_id, questionid, chosenoptionid );
     END LOOP;
 
-    -- Return the result
-    OPEN result FOR
-    SELECT StudentExamID,
-    'Answers submitted successfully' AS status,
-    jsonb_array_length(in_answer) AS answers_count;
 END;
 $$;
