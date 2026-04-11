@@ -9,7 +9,7 @@
 --		i_totalquestions : number of exam questions
 --===========================================================
 
-CREATE OR REPLACE PROCEDURE insertExam(i_examname TEXT,i_courseid INT,i_totalquestions INT)
+CREATE OR REPLACE PROCEDURE insertExam(i_examname TEXT,i_courseid INT,i_totalquestions INT, OUT exam_ID INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -22,7 +22,8 @@ BEGIN
     END IF;
 	
     INSERT INTO exam (examname, courseid, totalquestions)
-    VALUES (i_examname, i_courseid, i_totalquestions);
+    VALUES (i_examname, i_courseid, i_totalquestions)
+    RETURNING examid INTO exam_ID;
 
 EXCEPTION
     WHEN unique_violation THEN

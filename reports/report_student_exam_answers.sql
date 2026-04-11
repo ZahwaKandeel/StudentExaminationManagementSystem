@@ -11,7 +11,7 @@
 
 CREATE OR REPLACE PROCEDURE Report_StudentExamAnswers(
     p_examid    INT,
-    p_studentid INT, into result REFCURSOR
+    p_studentid INT,INOUT result REFCURSOR
 )
 
 LANGUAGE plpgsql
@@ -57,7 +57,7 @@ BEGIN
             p_studentid;
     END IF;
 
-    RETURN QUERY
+    OPEN result FOR
     SELECT
        
         eq.orderno::INT,

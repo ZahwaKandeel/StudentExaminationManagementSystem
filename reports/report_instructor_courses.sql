@@ -7,7 +7,7 @@
 -- =============================================================
 
 CREATE OR REPLACE PROCEDURE Report_InstructorCourses(
-    p_instructorid INT,into result REFCURSOR
+    p_instructorid INT, INOUT result REFCURSOR
 )
 
 LANGUAGE plpgsql
@@ -27,7 +27,7 @@ BEGIN
         RAISE EXCEPTION 'Instructor % is not assigned to any course.', p_instructorid;
     END IF;
 
-    RETURN QUERY
+    OPEN result FOR
     SELECT
         c.coursename::TEXT,
         t.trackname::TEXT,

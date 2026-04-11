@@ -15,7 +15,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM public;
 --=================================================================================
 
 
-CREATE ROLE adminUser WITH LOGIN PASSWORD 'Admin1234' LOGIN SUPERUSER CREATEDB CREATEROLE REPLICATION;
+CREATE ROLE adminUser WITH LOGIN PASSWORD 'Admin1234' SUPERUSER ;
 GRANT ALL PRIVILEGES ON SCHEMA public TO adminUser;
 
 
@@ -25,7 +25,7 @@ GRANT ALL PRIVILEGES ON SCHEMA public TO adminUser;
 CREATE ROLE Instructor WITH LOGIN PASSWORD 'Instructor1234';
 
 -- give the user main functionalities
-GRANT CONNECT ON DATABASE exam_db TO Instructor;
+GRANT CONNECT ON DATABASE StudentExaminationManagementSystem TO Instructor;
 GRANT USAGE ON SCHEMA public TO Instructor;
 
 --====================================================
@@ -88,7 +88,7 @@ GRANT EXECUTE ON PROCEDURE Report_ExamQuestions TO Instructor;
 CREATE ROLE Student WITH LOGIN PASSWORD 'Student1234';
 
 -- give the user main functionalities
-GRANT CONNECT ON DATABASE exam_db TO Student;
+GRANT CONNECT ON DATABASE StudentExaminationManagementSystem TO Student;
 GRANT USAGE ON SCHEMA public TO Student;
 
 -- give the user the access to the procedures available for him
