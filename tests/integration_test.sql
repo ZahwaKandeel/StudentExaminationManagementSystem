@@ -311,11 +311,11 @@ BEGIN
 
     -- Generate a second exam for student 2
     CALL GenerateExam(
-        p_courseid  := 1,
-        p_examname  := 'DB Midterm Test 2',
-        p_nummcq    := 3,
-        p_numtf     := 2,
-        new_examid  := v_examid2
+        1,
+        'DB Midterm Test 2',
+        3,
+        2,
+        v_examid2
     );
 
     -- Use student 2
@@ -343,12 +343,12 @@ BEGIN
     RAISE NOTICE 'Submitting only 1 answer out of 5 questions.';
 
     CALL SubmitExamAnswers(
-        p_studentid       := v_studentid,
-        p_examid          := v_examid2,
-        p_starttime       := NOW() - INTERVAL '15 minutes',
-        p_endtime         := NOW(),
-        p_answers         := v_answers_json,
-        new_studentexamid := v_studentexamid
+        v_studentid,
+        v_examid2,
+        NOW() - INTERVAL '15 minutes',
+        NOW(),
+        v_answers_json,
+        v_studentexamid
     );
 
     -- Verify only 1 answer row was created
@@ -409,7 +409,7 @@ BEGIN
 
     -- Now run CorrectExam
     CALL CorrectExam(
-        p_studentexamid := v_studentexamid
+        v_studentexamid
     );
 
     -- Read the TotalGrade that CorrectExam wrote
@@ -480,7 +480,7 @@ BEGIN
     RAISE NOTICE 'Max possible grade for this exam: %', v_max_possible;
 
     -- Run CorrectExam
-    CALL CorrectExam(p_studentexamid := v_studentexamid);
+    CALL CorrectExam(v_studentexamid);
 
     SELECT totalgrade INTO v_totalgrade
     FROM studentexam WHERE studentexamid = v_studentexamid;
@@ -519,11 +519,11 @@ BEGIN
 
     -- Generate a fresh exam
     CALL GenerateExam(
-        p_courseid  := 1,
-        p_examname  := 'All Correct Test',
-        p_nummcq    := 2,
-        p_numtf     := 2,
-        new_examid  := v_examid
+        1,
+        'All Correct Test',
+        2,
+        2,
+        v_examid
     );
 
     -- Build answers using the CORRECT option for every question
@@ -540,12 +540,12 @@ BEGIN
 
     -- Submit with all correct answers (student 3)
     CALL SubmitExamAnswers(
-        p_studentid       := 3,
-        p_examid          := v_examid,
-        p_starttime       := NOW() - INTERVAL '20 minutes',
-        p_endtime         := NOW(),
-        p_answers         := v_answers_json,
-        new_studentexamid := v_studentexamid
+        3,
+        v_examid,
+        NOW() - INTERVAL '20 minutes',
+        NOW(),
+        v_answers_json,
+        v_studentexamid
     );
 
     -- Calculate the max possible grade
@@ -556,7 +556,7 @@ BEGIN
     WHERE eq.examid = v_examid;
 
     -- Run CorrectExam
-    CALL CorrectExam(p_studentexamid := v_studentexamid);
+    CALL CorrectExam(v_studentexamid);
 
     SELECT totalgrade INTO v_totalgrade
     FROM studentexam WHERE studentexamid = v_studentexamid;
@@ -587,11 +587,11 @@ BEGIN
     RAISE NOTICE '=== TEST 8: CorrectExam (all wrong) ===';
 
     CALL GenerateExam(
-        p_courseid  := 1,
-        p_examname  := 'All Wrong Test',
-        p_nummcq    := 2,
-        p_numtf     := 2,
-        new_examid  := v_examid
+        1,
+        'All Wrong Test',
+        2,
+        2,
+        v_examid
     );
 
     -- Build answers using the WRONG option for every question
@@ -617,15 +617,15 @@ BEGIN
 
     -- Submit (student 4)
     CALL SubmitExamAnswers(
-        p_studentid       := 4,
-        p_examid          := v_examid,
-        p_starttime       := NOW() - INTERVAL '20 minutes',
-        p_endtime         := NOW(),
-        p_answers         := v_answers_json,
-        new_studentexamid := v_studentexamid
+        4,
+        v_examid,
+        NOW() - INTERVAL '20 minutes',
+        NOW(),
+        v_answers_json,
+        v_studentexamid
     );
 
-    CALL CorrectExam(p_studentexamid := v_studentexamid);
+    CALL CorrectExam(v_studentexamid);
 
     SELECT totalgrade INTO v_totalgrade
     FROM studentexam WHERE studentexamid = v_studentexamid;
