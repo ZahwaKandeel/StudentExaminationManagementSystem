@@ -28,7 +28,7 @@ bash scripts/backup.sh production
 
 Backup files are saved to the `backups/` folder with a timestamp:
 ```
-backups/iti_exam_development_20260411_143022.sql
+backups/iti_exam_development.sql
 ```
 
 ## Restoring from a backup
@@ -38,7 +38,7 @@ backups/iti_exam_development_20260411_143022.sql
 ls -lh backups/
 
 # Step 2: run the restore script
-bash scripts/restore.sh backups/iti_exam_development_20260411_143022.sql
+bash scripts/restore.sh backups/iti_exam_development.sql
 ```
 
 The script will ask you to press ENTER before overwriting.
