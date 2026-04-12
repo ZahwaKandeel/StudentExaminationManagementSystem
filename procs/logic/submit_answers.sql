@@ -54,17 +54,15 @@ BEGIN
         v_QuestionID    := (Answer->>'question_id')::INT;
         ChosenOptionID := (Answer->>'chosen_option_id')::INT;
 
-        -- Validate that the chosen option exists
         IF NOT EXISTS (SELECT 1 FROM choice WHERE optionid = ChosenOptionID) THEN
             RAISE EXCEPTION 'Chosen option with ID % does not exist.', ChosenOptionID;
         END IF;
 
-        -- Validate that the chosen option belongs to the specified question
         IF NOT EXISTS (
             SELECT 1 FROM choice
             WHERE questionid = v_QuestionID AND optionid = ChosenOptionID
         ) THEN
-            RAISE EXCEPTION 'Chosen option % does not belong to question %.', ChosenOptionID, QuestionID;
+            RAISE EXCEPTION 'Chosen option % does not belong to question %.', ChosenOptionID, v_QuestionID;
         END IF;
 
         CALL InsertStudentAnswer(SX_id, v_QuestionID, chosenoptionid );

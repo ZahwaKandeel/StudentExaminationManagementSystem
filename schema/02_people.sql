@@ -9,7 +9,7 @@ CREATE TABLE Instructor (
     InstructorID    SERIAL      PRIMARY KEY,
     Name            TEXT        COLLATE arabic_icu NOT NULL,
     Email           TEXT        NOT NULL UNIQUE,
-    DepartmentNo    INT         NOT NULL,
+    DepartmentNo    INT ,
 
     CONSTRAINT fk_instructor_department
         FOREIGN KEY (DepartmentNo)
@@ -38,6 +38,9 @@ CREATE TABLE Student_Track (
         ON UPDATE CASCADE
 );
 
+CREATE INDEX idx_st_trackid ON student_track(trackid);
+
+
 CREATE TABLE Instructor_Course (
     InstructorID    INT     NOT NULL,
     CourseID        INT     NOT NULL,
@@ -57,3 +60,6 @@ CREATE TABLE Instructor_Course (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+CREATE INDEX idx_ic_instructorid ON instructor_course(instructorid);
+CREATE INDEX idx_ic_courseid ON instructor_course(courseid);
