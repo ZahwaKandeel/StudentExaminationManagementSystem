@@ -41,18 +41,25 @@ StudentExaminationManagementSystem/
 │   ├── rpt_ExamQuestions.sql        # Report_ExamQuestions
 │   └── report_student_exam_answers.sql # Report_StudentExamAnswers
 ├── data/
-│   └── sample_data.sql              # Seed: 3 depts, 7 tracks, 7 courses,
-│                                    #   5 instructors, 60+ questions
+│   ├── sample_data.sql              # Seed: 3 depts, 6 tracks, 7 courses,
+│   │                                #   5 instructors, 60 questions, 25 students
+│   ├── seed_exams.sql               # Generate 5 exams via GenerateExam
+│   ├── seed_student_submissions.sql # Assign students to tracks, submit answers,
+│   │                                #   and correct exams for all report scenarios
+│   └── seed_reports.sql             # Master runner: calls above + executes all 5
+│   │                                #   reports with multiple test cases each
+│   └── performance_seed.sql         # Seed: 50 Question for performance test
 ├── security/
 │   └── roles.sql                    # Role-based access: adminUser / Instructor / Student
 ├── tests/
 │   ├── DBReset.sql                  # ⚠️ Destructive — drops public schema (dev only)
 │   ├── integration_test.sql         # 8-scenario lifecycle test suite
 │   ├── test_reports.sql             # Report procedure test cases
-│   └── Performance.sql              # NFR-01/02: 50-question exam perf test
+│   └── Performance.sql              #  50-question exam perf test
+│   └── test_roles.sql               #  Roles testing
 ├── scripts/
 │   ├── backup.sql                    # pg_dump backup script
-│   ├── restore.sql                   # pg_restore from backup   
+│   ├── restore.sql                   # pg_restore from backup
 └── docs/
     ├── README.md                    # This file
     ├── db_dictionary.md             # Column-level documentation for all tables
@@ -101,28 +108,31 @@ psql -d exam_db -f reports/report_student_exam_answers.sql
 # 6. Set up roles & security
 psql -d exam_db -f security/roles.sql
 
-# 7. Load sample seed data
+# 7. Load sample seed data (org + people + questions + students)
 psql -d exam_db -f data/sample_data.sql
+
+# 8. Seed exams, submissions, and run all reports
+psql -d exam_db -f data/seed_reports.sql
+
+# 8. Seed questions for performance test
+psql -d exam_db -f data/performance_seed.sql
+
 ```
 
----
+### Main Procedures
 
-## Core Procedures
-
-### Exam Lifecycle
-
-| Procedure | Signature | Description |
-|-----------|-----------|-------------|
-| `GenerateExam` | `(e_CourseID INT, e_ExamName TEXT, e_NumMCQ INT, e_NumTF INT, OUT new_examid INT)` | Creates an exam and randomly selects MCQ + TF questions from the course question bank |
-| `SubmitExamAnswers` | `(s_id INT, ex_id INT, start_time TIMESTAMPTZ, end_time TIMESTAMPTZ, in_answer JSONB, OUT SX_id INT)` | Creates a StudentExam record and inserts individual answers from a JSONB array |
-| `CorrectExam` | `(e_StudentExamID INT)` | Grades the exam by comparing student answers with model answers, writes TotalGrade (weighted by `SUM(points)`) |
+| Procedure           | Signature                                                                                             | Description                                                                                                    |
+| ------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `GenerateExam`      | `(e_CourseID INT, e_ExamName TEXT, e_NumMCQ INT, e_NumTF INT, OUT new_examid INT)`                    | Creates an exam and randomly selects MCQ + TF questions from the course question bank                          |
+| `SubmitExamAnswers` | `(s_id INT, ex_id INT, start_time TIMESTAMPTZ, end_time TIMESTAMPTZ, in_answer JSONB, OUT SX_id INT)` | Creates a StudentExam record and inserts individual answers from a JSONB array                                 |
+| `CorrectExam`       | `(e_StudentExamID INT)`                                                                               | Grades the exam by comparing student answers with model answers, writes TotalGrade (weighted by `SUM(points)`) |
 
 ### JSONB Answer Format
 
 ```json
 [
-  {"question_id": 1, "chosen_option_id": 3},
-  {"question_id": 2, "chosen_option_id": 7}
+  { "question_id": 1, "chosen_option_id": 3 },
+  { "question_id": 2, "chosen_option_id": 7 }
 ]
 ```
 
@@ -153,13 +163,13 @@ CALL CorrectExam(v_sx_id);
 All entity CRUD procedures follow the same naming pattern:
 `Insert<Entity>`, `Update<Entity>`, `Delete<Entity>`, `Select<Entity>By...`
 
-| Category | File | Key Procedures |
-|----------|------|----------------|
-| Department / Track / Course | `procs/crud/dept_crud.sql` | `InsertDepartment`, `InsertTrack`, `InsertCourse`, `AssignCourseToTrack` |
-| Student / Instructor | `procs/crud/people_crud.sql` | `InsertStudent`, `InsertInstructor`, `AssignStudentToTrack`, `AssignInstructorToCourse` |
-| Question / Choice / ModelAnswer | `procs/crud/question_crud.sql` | `InsertQuestion`, `InsertOption`, `SetModelAnswer` |
-| Exam / ExamQuestion | `procs/crud/exam_crud.sql` | `insertExam`, `insert_examquestion` |
-| StudentExam / StudentAnswer | `procs/crud/student_exam_crud.sql` | `InsertStudentExam`, `InsertStudentAnswer` |
+| Category                        | File                               | Key Procedures                                                                          |
+| ------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------- |
+| Department / Track / Course     | `procs/crud/dept_crud.sql`         | `InsertDepartment`, `InsertTrack`, `InsertCourse`, `AssignCourseToTrack`                |
+| Student / Instructor            | `procs/crud/people_crud.sql`       | `InsertStudent`, `InsertInstructor`, `AssignStudentToTrack`, `AssignInstructorToCourse` |
+| Question / Choice / ModelAnswer | `procs/crud/question_crud.sql`     | `InsertQuestion`, `InsertOption`, `SetModelAnswer`                                      |
+| Exam / ExamQuestion             | `procs/crud/exam_crud.sql`         | `insertExam`, `insert_examquestion`                                                     |
+| StudentExam / StudentAnswer     | `procs/crud/student_exam_crud.sql` | `InsertStudentExam`, `InsertStudentAnswer`                                              |
 
 ---
 
@@ -174,13 +184,13 @@ FETCH ALL FROM my_cursor;
 COMMIT;
 ```
 
-| Procedure | Parameters | Returns | Granted To |
-|-----------|------------|---------|------------|
-| `Report_StudentsByDepartment` | `(d_DepartmentID INT, INOUT ref REFCURSOR)` | Students with tracks per department | Student |
-| `Report_StudentGrades` | `(s_id INT, INOUT result REFCURSOR)` | Exam grades with percentage per student | Student |
-| `Report_InstructorCourses` | `(p_instructorid INT, INOUT result REFCURSOR)` | Courses + student count per track for an instructor | Instructor |
-| `Report_ExamQuestions` | `(p_examid INT, INOUT ref REFCURSOR)` | All questions + choices for an exam (includes `is_correct` flag) | Instructor |
-| `Report_StudentExamAnswers` | `(p_examid INT, p_studentid INT, INOUT result REFCURSOR)` | A student's answers with correctness (hides model answers) | — *Instructor* |
+| Procedure                     | Parameters                                                | Returns                                                          | Granted To     |
+| ----------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- | -------------- |
+| `Report_StudentsByDepartment` | `(d_DepartmentID INT, INOUT ref REFCURSOR)`               | Students with tracks per department                              | Student        |
+| `Report_StudentGrades`        | `(s_id INT, INOUT result REFCURSOR)`                      | Exam grades with percentage per student                          | Student        |
+| `Report_InstructorCourses`    | `(p_instructorid INT, INOUT result REFCURSOR)`            | Courses + student count per track for an instructor              | Instructor     |
+| `Report_ExamQuestions`        | `(p_examid INT, INOUT ref REFCURSOR)`                     | All questions + choices for an exam (includes `is_correct` flag) | Instructor     |
+| `Report_StudentExamAnswers`   | `(p_examid INT, p_studentid INT, INOUT result REFCURSOR)` | A student's answers with correctness (hides model answers)       | — _Instructor_ |
 
 ### Examples
 
@@ -207,14 +217,13 @@ psql -d exam_db -f scripts/restore.sql
 
 Three roles are defined in `security/roles.sql`:
 
-| Role | Access |
-|------|--------|
-| `adminUser` | Superuser — full access to everything |
+| Role         | Access                                                                 |
+| ------------ | ---------------------------------------------------------------------- |
+| `adminUser`  | Superuser — full access to everything                                  |
 | `Instructor` | Can manage exams, questions, model answers, and run instructor reports |
-| `Student` | Can submit exam answers and view their own grades |
+| `Student`    | Can submit exam answers and view their own grades                      |
 
 Direct table access is revoked for all roles. All interaction must go through stored procedures.
-
 
 ---
 
@@ -230,6 +239,9 @@ psql -d exam_db -f tests/test_reports.sql
 # Performance test — 50-question exam generation + correction timing
 psql -d exam_db -f tests/Performance.sql
 
+# Roles test
+psql -d exam_db -f tests/test_roles.sql
+
 # ⚠️ WARNING: DBReset.sql drops the entire public schema
 # Only run this on a fresh dev database you can afford to lose
 psql -d exam_db -f tests/DBReset.sql
@@ -240,6 +252,7 @@ psql -d exam_db -f tests/DBReset.sql
 ## Team
 
 **Developer 1: Zahwa Kandeel**
+
 - Init repo, folder structure, conventions doc
 - Schema: Department, Track, Course, Track_Course (`01_org.sql`)
 - CRUD: Department, Track, Course + `AssignCourseToTrack`
@@ -252,6 +265,7 @@ psql -d exam_db -f tests/DBReset.sql
 - README + setup guide + call examples
 
 **Developer 2: Ayman Mohamed**
+
 - ERD design, table definitions draft
 - Schema: Student, Instructor, Student_Track, Instructor_Course (`02_people.sql`)
 - CRUD: Student, Instructor + `AssignStudentToTrack`, `AssignInstructorToCourse`
@@ -263,6 +277,7 @@ psql -d exam_db -f tests/DBReset.sql
 - DB dictionary finalise + ERD export PDF
 
 **Developer 3: Mostafa Abd El Kawy**
+
 - DB dictionary template, collation & constraints research
 - Schema: Question, Choice, ModelAnswer, Exam, ExamQuestion, StudentExam, StudentAnswer (`03_exam.sql`)
 - CRUD: Question, Choice, `SetModelAnswer` (`question_crud.sql`)
@@ -275,4 +290,3 @@ psql -d exam_db -f tests/DBReset.sql
 - Final merge to main, tag release, LinkedIn post
 
 ---
-
