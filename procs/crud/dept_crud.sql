@@ -340,34 +340,36 @@ $$;
 
 
 --=========================================
---procedure Name: SelectCourseByName
---Description: Returns course by track course
+--procedure Name: SelectCourseByTrack
+--Description: Returns course by track 
 --Parameters:
 --      ref: output parameter
---	c_CourseName : course name
+--	t_TrackName : track name
 -- call example : 
                 --BEGIN;
-                --CALL SelectCourseByName('ref');
+                --CALL SelectCourseByTrack('ref');
                 --FETCH ALL FROM ref;
                 --COMMIT;
 --=========================================
 
-CREATE OR REPLACE PROCEDURE SelectCourseByName(c_CourseName TEXT, INOUT c_cursor REFCURSOR)
+CREATE OR REPLACE PROCEDURE SelectCourseByTrack(t_TrackName TEXT, INOUT c_cursor REFCURSOR)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF c_CourseName IS NULL OR TRIM(c_CourseName) = '' THEN
-    	RAISE EXCEPTION 'Course name cannot be empty';
+	IF t_TrackName IS NULL OR TRIM(t_TrackName) = '' THEN
+    	RAISE EXCEPTION 'Track name cannot be empty';
     	END IF;
 
-	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseName = c_CourseName) THEN
-	RAISE EXCEPTION 'Course "%" does not exist', c_CourseName;
+	IF NOT EXISTS (SELECT 1 FROM Track WHERE TrackName = t_TrackName) THEN
+	RAISE EXCEPTION 'Course "%" does not exist', t_TrackName;
     	END IF;
 	
 	OPEN c_cursor FOR
 	SELECT c.CourseName, c.MinDegree, c.MaxDegree
 	FROM Course c
-	WHERE c.CourseName = c_CourseName;
+	JOIN Track_Course tc ON tc.CourseID = c.CourseID
+	JOIN Track t ON t.TrackID = tc.TrackID
+	WHERE t_TrackName ILIKE t_TrackName;
 END;
 $$;
 
