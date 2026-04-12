@@ -208,19 +208,19 @@ $$;
 
 
 --==============================================================
---procedure Name: SelectTrackByName
---Description: Retrieve tracks by name 
+--procedure Name: SelectTrackByDepartment
+--Description: Retrieve tracks by department 
 --Parameters:
 --      ref: output parameter
 --		t_TrackName : track name
 -- call example : 
                 --BEGIN;
-                --CALL SelectTrackByName('ref');
+                --CALL SelectTrackByDepartment('ref');
                 --FETCH ALL FROM ref;
                 --COMMIT;
 --==============================================================
 
-CREATE OR REPLACE PROCEDURE SelectTrackByName(INOUT ref REFCURSOR, t_TrackName TEXT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE SelectTrackByDepartment(INOUT ref REFCURSOR, t_DepartmentName TEXT DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -228,7 +228,7 @@ BEGIN
 	SELECT t.TrackName, d.DepartmentName
 	FROM Track t
 	JOIN Department d ON d.DepartmentID = t.DepartmentID
-	WHERE (t_TrackName IS NULL OR t.TrackName ILIKE '%' || t_TrackName || '%');
+	WHERE (t_DepartmentName IS NULL OR d.DepartmentName ILIKE '%' || t_DepartmentName || '%');
 END;
 $$;
 
