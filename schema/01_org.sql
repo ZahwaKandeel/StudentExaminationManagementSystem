@@ -8,6 +8,7 @@ CREATE TABLE Course (
 	CHECK (MinDegree >= 0 AND MaxDegree > MinDegree)
 );
 
+
 CREATE TABLE Department(
 	DepartmentID SERIAL PRIMARY KEY,
 	DepartmentName TEXT COLLATE arabic_icu NOT NULL,
@@ -41,3 +42,5 @@ CREATE TABLE Track_Course (
         REFERENCES Course(CourseID)
         ON DELETE CASCADE
 );
+
+CREATE INDEX idx_tc_courseid ON track_course(courseid);

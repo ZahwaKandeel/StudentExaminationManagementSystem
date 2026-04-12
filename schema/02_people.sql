@@ -38,6 +38,9 @@ CREATE TABLE Student_Track (
         ON UPDATE CASCADE
 );
 
+CREATE INDEX idx_st_trackid ON student_track(trackid);
+
+
 CREATE TABLE Instructor_Course (
     InstructorID    INT     NOT NULL,
     CourseID        INT     NOT NULL,
@@ -57,3 +60,6 @@ CREATE TABLE Instructor_Course (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+CREATE INDEX idx_ic_instructorid ON instructor_course(instructorid);
+CREATE INDEX idx_ic_courseid ON instructor_course(courseid);

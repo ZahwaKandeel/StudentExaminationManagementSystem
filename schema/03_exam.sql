@@ -20,9 +20,6 @@ CREATE TABLE question (
         CHECK (points > 0)
 );
 
-CREATE INDEX idx_question_courseid ON question(courseid);
-CREATE INDEX idx_question_type     ON question(type);
-
 CREATE TABLE choice (
     optionid      SERIAL    PRIMARY KEY,
     questionid    INT       NOT NULL,
@@ -43,8 +40,6 @@ CREATE TABLE choice (
     CONSTRAINT uq_choice_order
         UNIQUE (questionid, optionorder)
 );
-
-CREATE INDEX idx_choice_questionid ON choice(questionid);
 
 CREATE TABLE modelanswer (
     questionid      INT    NOT NULL,
@@ -113,8 +108,6 @@ CREATE TABLE examquestion (
         CHECK (orderno > 0)
 );
 
-CREATE INDEX idx_examquestion_examid ON examquestion(examid);
-
 CREATE TABLE studentexam (
     studentexamid   SERIAL      PRIMARY KEY,
     studentid       INT         NOT NULL,
@@ -145,8 +138,6 @@ CREATE TABLE studentexam (
         CHECK (endtime IS NULL OR endtime > starttime)
 );
 
-CREATE INDEX idx_studentexam_studentid ON studentexam(studentid);
-CREATE INDEX idx_studentexam_examid    ON studentexam(examid);
 
 CREATE TABLE studentanswer (
     studentanswerid   SERIAL    PRIMARY KEY,
@@ -173,5 +164,3 @@ CREATE TABLE studentanswer (
         REFERENCES choice(optionid)
         ON DELETE RESTRICT
 );
-
-CREATE INDEX idx_studentanswer_studentexamid ON studentanswer(studentexamid);
