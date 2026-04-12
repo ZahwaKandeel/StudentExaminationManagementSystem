@@ -320,21 +320,19 @@ $$;
 --		c_CourseName : course name
 --=========================================
 
-CREATE OR REPLACE PROCEDURE DeleteCourseByName(
-	c_CourseName TEXT
-)
+CREATE OR REPLACE PROCEDURE DeleteCourse(c_CourseID INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF c_CourseName IS NULL OR TRIM(c_CourseName) = '' THEN
-    	RAISE EXCEPTION 'Course name cannot be empty';
+	IF c_CourseID IS NULL THEN
+    	RAISE EXCEPTION 'Course ID cannot be null';
     	END IF;
     	
-	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseName = c_CourseName) THEN
-	RAISE EXCEPTION 'Course "%" does not exist', c_CourseName;
+	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseID = c_CourseID) THEN
+	RAISE EXCEPTION 'Course "%" does not exist', c_CourseID;
     	END IF;
     	
-	DELETE FROM Course WHERE CourseName = c_CourseName;
+	DELETE FROM Course WHERE CourseID = c_CourseID;
 END;
 $$;
 
