@@ -9,7 +9,7 @@ CREATE TABLE Instructor (
     InstructorID    SERIAL      PRIMARY KEY,
     Name            TEXT        COLLATE arabic_icu NOT NULL,
     Email           TEXT        NOT NULL UNIQUE,
-    DepartmentNo    INT         NOT NULL,
+    DepartmentNo    INT ,
 
     CONSTRAINT fk_instructor_department
         FOREIGN KEY (DepartmentNo)

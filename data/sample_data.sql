@@ -1,12 +1,12 @@
 -- =============================================================
--- File    : data/seed_org.sql
--- Purpose : Seed departments, tracks, courses, instructors
+-- File    : data/sample_data.sql
+-- Purpose : Seed departments, tracks, courses, instructors, questions, students
 --           Uses stored procedures — no direct table inserts
 -- Run after: all schema files + all CRUD procedures loaded
 -- =============================================================
 
 -- -------------------------------------------------------
--- RESET (development only — remove before final submission)
+-- RESET 
 -- -------------------------------------------------------
 TRUNCATE TABLE
     Student,

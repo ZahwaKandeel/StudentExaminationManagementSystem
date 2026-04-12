@@ -48,7 +48,7 @@ BEGIN
     SET
         Name  = COALESCE(NULLIF(TRIM(s_name),  ''), Name),
         Email = COALESCE(NULLIF(LOWER(TRIM(s_email)), ''), Email),
-        Phone = COALESCE(NULLIF(LOWER(TRIM(s_phone)), ''), Phone)
+        Phone = COALESCE(NULLIF(TRIM(s_phone), ''), Phone)
     WHERE StudentID = s_id;
 
     EXCEPTION
