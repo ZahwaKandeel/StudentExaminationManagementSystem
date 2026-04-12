@@ -53,26 +53,26 @@ $$;
 
 
 --=========================================
---procedure Name: DeleteDepartmentByName
+--procedure Name: DeleteDepartment
 --Description: Deletes existing department
 --Parameters:
---		d_DepartmentName : department name
+--		d_DepartmentID : department id
 --=========================================
 
-CREATE OR REPLACE PROCEDURE DeleteDepartmentByName(d_DepartmentName TEXT)
+CREATE OR REPLACE PROCEDURE DeleteDepartment(d_DepartmentID INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM Department WHERE DepartmentName = d_DepartmentName) THEN
-	RAISE EXCEPTION 'That department name does not exists';
+	IF NOT EXISTS (SELECT 1 FROM Department WHERE DepartmentID = d_DepartmentID) THEN
+	RAISE EXCEPTION 'That department id does not exists';
 	END IF;
 
-	IF d_DepartmentName IS NULL OR d_DepartmentName = '' THEN
-    	RAISE EXCEPTION 'Department name cannot be empty';
+	IF d_DepartmentID IS NULL THEN
+    	RAISE EXCEPTION 'Department ID cannot be null';
 	END IF;
 	
 	DELETE FROM Department
-	WHERE DepartmentName = d_DepartmentName;
+	WHERE DepartmentID = d_DepartmentID;
 END;
 $$;
 
@@ -183,44 +183,44 @@ $$;
 
 
 --=========================================
---procedure Name: DeleteTrackByName
+--procedure Name: DeleteTrack
 --Description: Deletes existing track
 --Parameters:
---		t_TrackName : track name
+--		t_TrackID : track ID
 --=========================================
 
-CREATE OR REPLACE PROCEDURE DeleteTrackByName(t_TrackName TEXT)
+CREATE OR REPLACE PROCEDURE DeleteTrack(t_TrackID TEXT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM Track WHERE TrackName = t_TrackName) THEN
-	RAISE EXCEPTION 'That track name does not exists';
+	IF NOT EXISTS (SELECT 1 FROM Track WHERE TrackID = t_TrackID) THEN
+	RAISE EXCEPTION 'That track ID does not exists';
 	END IF;
 
-	IF t_TrackName IS NULL OR t_TrackName = '' THEN
-    	RAISE EXCEPTION 'Track name cannot be empty';
+	IF t_TrackID IS NULL THEN
+    	RAISE EXCEPTION 'Track ID cannot be empty';
 	END IF;
 
 	DELETE FROM Track
-	WHERE TrackName = t_TrackName;
+	WHERE TrackID = t_TrackID;
 END;
 $$;
 
 
 --==============================================================
---procedure Name: SelectTrackByName
---Description: Retrieve tracks by name 
+--procedure Name: SelectTrackByDepartment
+--Description: Retrieve tracks by department 
 --Parameters:
 --      ref: output parameter
 --		t_TrackName : track name
 -- call example : 
                 --BEGIN;
-                --CALL SelectTrackByName('ref');
+                --CALL SelectTrackByDepartment('ref');
                 --FETCH ALL FROM ref;
                 --COMMIT;
 --==============================================================
 
-CREATE OR REPLACE PROCEDURE SelectTrackByName(INOUT ref REFCURSOR, t_TrackName TEXT DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE SelectTrackByDepartment(INOUT ref REFCURSOR, t_DepartmentName TEXT DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -228,7 +228,7 @@ BEGIN
 	SELECT t.TrackName, d.DepartmentName
 	FROM Track t
 	JOIN Department d ON d.DepartmentID = t.DepartmentID
-	WHERE (t_TrackName IS NULL OR t.TrackName ILIKE '%' || t_TrackName || '%');
+	WHERE (t_DepartmentName IS NULL OR d.DepartmentName ILIKE '%' || t_DepartmentName || '%');
 END;
 $$;
 
@@ -274,37 +274,38 @@ $$;
 
 
 --=================================================================
---procedure Name: UpdateCourseDegrees
---Description: Updates existing course min or max degree
+--procedure Name: UpdateCourse
+--Description: Updates existing course 
 --Parameters:
+--		c_CourseID : course id
 --		c_CourseName : course name
 --		c_MinDegree : course minimum degree
 --		c_MaxDegree : course maximum degree
 --==================================================================
 
-CREATE OR REPLACE PROCEDURE UpdateCourseDegrees(c_CourseName TEXT,c_MinDegree INT,c_MaxDegree INT)
+CREATE OR REPLACE PROCEDURE UpdateCourse(c_CourseID INT, c_CourseName TEXT,c_MinDegree INT,c_MaxDegree INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
+	IF c_CourseID IS NULL THEN
+		RAISE EXCEPTION 'Course ID cannot be null';
+		END IF;
+
+	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseID = c_CourseID) THEN
+	RAISE EXCEPTION 'Course "%" does not exist', c_CourseID;
+    	END IF;	
+
 	IF c_CourseName IS NULL OR TRIM(c_CourseName) = '' THEN
     	RAISE EXCEPTION 'Course name cannot be empty';
     	END IF;
-
-	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseName = c_CourseName) THEN
-	RAISE EXCEPTION 'Course "%" does not exist', c_CourseName;
-    	END IF;
     	
-	IF c_MinDegree IS NULL THEN
-    	RAISE EXCEPTION 'Minimum course degree cannot be empty';
-	END IF;
-	
-	IF c_MaxDegree IS NULL THEN
-    	RAISE EXCEPTION 'Maximum course degree cannot be empty';
+	IF c_MinDegree IS NOT NULL AND c_MaxDegree IS NOT NULL AND c_MinDegree >= c_MaxDegree THEN
+		RAISE EXCEPTION 'Minimum degree must be less than maximum degree';
 	END IF;
 	
 	UPDATE Course
-	SET MinDegree = c_MinDegree, MaxDegree = c_MaxDegree
-	WHERE CourseName = c_CourseName;
+	SET CourseName = c_CourseName, MinDegree = c_MinDegree, MaxDegree = c_MaxDegree
+	WHERE CourseID = c_CourseID;
 
 	EXCEPTION
 	WHEN check_violation THEN
@@ -314,60 +315,60 @@ $$;
 
 
 --=========================================
---procedure Name: DeleteCourseByName
+--procedure Name: DeleteCourse
 --Description: Deletes existing course
 --Parameters:
---		c_CourseName : course name
+--		c_CourseID : course id
 --=========================================
 
-CREATE OR REPLACE PROCEDURE DeleteCourseByName(
-	c_CourseName TEXT
-)
+CREATE OR REPLACE PROCEDURE DeleteCourse(c_CourseID INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF c_CourseName IS NULL OR TRIM(c_CourseName) = '' THEN
-    	RAISE EXCEPTION 'Course name cannot be empty';
+	IF c_CourseID IS NULL THEN
+    	RAISE EXCEPTION 'Course ID cannot be null';
     	END IF;
     	
-	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseName = c_CourseName) THEN
-	RAISE EXCEPTION 'Course "%" does not exist', c_CourseName;
+	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseID = c_CourseID) THEN
+	RAISE EXCEPTION 'Course "%" does not exist', c_CourseID;
     	END IF;
     	
-	DELETE FROM Course WHERE CourseName = c_CourseName;
+	DELETE FROM Course WHERE CourseID = c_CourseID;
 END;
 $$;
 
 
 --=========================================
---procedure Name: SelectCourseByName
---Description: Returns course by track course
+--procedure Name: SelectCourseByTrack
+--Description: Returns course by track 
 --Parameters:
 --      ref: output parameter
---	c_CourseName : course name
+--	t_TrackName : track name
 -- call example : 
                 --BEGIN;
-                --CALL SelectCourseByName('ref');
+                --CALL SelectCourseByTrack('ref');
                 --FETCH ALL FROM ref;
                 --COMMIT;
 --=========================================
 
-CREATE OR REPLACE PROCEDURE SelectCourseByName(c_CourseName TEXT, INOUT c_cursor REFCURSOR)
+CREATE OR REPLACE PROCEDURE SelectCourseByTrack(t_TrackName TEXT, INOUT c_cursor REFCURSOR)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF c_CourseName IS NULL OR TRIM(c_CourseName) = '' THEN
-    	RAISE EXCEPTION 'Course name cannot be empty';
+	IF t_TrackName IS NULL OR TRIM(t_TrackName) = '' THEN
+    	RAISE EXCEPTION 'Track name cannot be empty';
     	END IF;
 
-	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseName = c_CourseName) THEN
-	RAISE EXCEPTION 'Course "%" does not exist', c_CourseName;
+	IF NOT EXISTS (SELECT 1 FROM Track WHERE TrackName = t_TrackName) THEN
+	RAISE EXCEPTION 'Course "%" does not exist', t_TrackName;
     	END IF;
 	
 	OPEN c_cursor FOR
 	SELECT c.CourseName, c.MinDegree, c.MaxDegree
 	FROM Course c
-	WHERE c.CourseName = c_CourseName;
+	JOIN Track_Course tc ON tc.CourseID = c.CourseID
+	JOIN Track t ON t.TrackID = tc.TrackID
+	WHERE t_TrackName ILIKE t_TrackName;
 END;
 $$;
 
