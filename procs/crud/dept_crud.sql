@@ -53,26 +53,26 @@ $$;
 
 
 --=========================================
---procedure Name: DeleteDepartmentByName
+--procedure Name: DeleteDepartment
 --Description: Deletes existing department
 --Parameters:
---		d_DepartmentName : department name
+--		d_DepartmentID : department id
 --=========================================
 
-CREATE OR REPLACE PROCEDURE DeleteDepartmentByName(d_DepartmentName TEXT)
+CREATE OR REPLACE PROCEDURE DeleteDepartment(d_DepartmentID INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM Department WHERE DepartmentName = d_DepartmentName) THEN
-	RAISE EXCEPTION 'That department name does not exists';
+	IF NOT EXISTS (SELECT 1 FROM Department WHERE DepartmentID = d_DepartmentID) THEN
+	RAISE EXCEPTION 'That department id does not exists';
 	END IF;
 
-	IF d_DepartmentName IS NULL OR d_DepartmentName = '' THEN
-    	RAISE EXCEPTION 'Department name cannot be empty';
+	IF d_DepartmentID IS NULL THEN
+    	RAISE EXCEPTION 'Department ID cannot be null';
 	END IF;
 	
 	DELETE FROM Department
-	WHERE DepartmentName = d_DepartmentName;
+	WHERE DepartmentID = d_DepartmentID;
 END;
 $$;
 
