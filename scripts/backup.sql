@@ -1,0 +1,1 @@
+pg_dump -U postgres -d exam_db -F c -f <path to the backup dir>/backup.dump
