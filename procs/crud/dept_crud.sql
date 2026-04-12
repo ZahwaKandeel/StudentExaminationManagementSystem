@@ -274,37 +274,38 @@ $$;
 
 
 --=================================================================
---procedure Name: UpdateCourseDegrees
---Description: Updates existing course min or max degree
+--procedure Name: UpdateCourse
+--Description: Updates existing course 
 --Parameters:
+--		c_CourseID : course id
 --		c_CourseName : course name
 --		c_MinDegree : course minimum degree
 --		c_MaxDegree : course maximum degree
 --==================================================================
 
-CREATE OR REPLACE PROCEDURE UpdateCourseDegrees(c_CourseName TEXT,c_MinDegree INT,c_MaxDegree INT)
+CREATE OR REPLACE PROCEDURE UpdateCourse(c_CourseID INT, c_CourseName TEXT,c_MinDegree INT,c_MaxDegree INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
+	IF c_CourseID IS NULL THEN
+		RAISE EXCEPTION 'Course ID cannot be null';
+		END IF;
+
+	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseID = c_CourseID) THEN
+	RAISE EXCEPTION 'Course "%" does not exist', c_CourseID;
+    	END IF;	
+
 	IF c_CourseName IS NULL OR TRIM(c_CourseName) = '' THEN
     	RAISE EXCEPTION 'Course name cannot be empty';
     	END IF;
-
-	IF NOT EXISTS (SELECT 1 FROM Course WHERE CourseName = c_CourseName) THEN
-	RAISE EXCEPTION 'Course "%" does not exist', c_CourseName;
-    	END IF;
     	
-	IF c_MinDegree IS NULL THEN
-    	RAISE EXCEPTION 'Minimum course degree cannot be empty';
-	END IF;
-	
-	IF c_MaxDegree IS NULL THEN
-    	RAISE EXCEPTION 'Maximum course degree cannot be empty';
+	IF c_MinDegree IS NOT NULL AND c_MaxDegree IS NOT NULL AND c_MinDegree >= c_MaxDegree THEN
+		RAISE EXCEPTION 'Minimum degree must be less than maximum degree';
 	END IF;
 	
 	UPDATE Course
-	SET MinDegree = c_MinDegree, MaxDegree = c_MaxDegree
-	WHERE CourseName = c_CourseName;
+	SET CourseName = c_CourseName, MinDegree = c_MinDegree, MaxDegree = c_MaxDegree
+	WHERE CourseID = c_CourseID;
 
 	EXCEPTION
 	WHEN check_violation THEN
@@ -314,10 +315,10 @@ $$;
 
 
 --=========================================
---procedure Name: DeleteCourseByName
+--procedure Name: DeleteCourse
 --Description: Deletes existing course
 --Parameters:
---		c_CourseName : course name
+--		c_CourseID : course id
 --=========================================
 
 CREATE OR REPLACE PROCEDURE DeleteCourse(c_CourseID INT)
