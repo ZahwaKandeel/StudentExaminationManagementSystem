@@ -183,26 +183,26 @@ $$;
 
 
 --=========================================
---procedure Name: DeleteTrackByName
+--procedure Name: DeleteTrack
 --Description: Deletes existing track
 --Parameters:
---		t_TrackName : track name
+--		t_TrackID : track ID
 --=========================================
 
-CREATE OR REPLACE PROCEDURE DeleteTrackByName(t_TrackName TEXT)
+CREATE OR REPLACE PROCEDURE DeleteTrack(t_TrackID TEXT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM Track WHERE TrackName = t_TrackName) THEN
-	RAISE EXCEPTION 'That track name does not exists';
+	IF NOT EXISTS (SELECT 1 FROM Track WHERE TrackID = t_TrackID) THEN
+	RAISE EXCEPTION 'That track ID does not exists';
 	END IF;
 
-	IF t_TrackName IS NULL OR t_TrackName = '' THEN
-    	RAISE EXCEPTION 'Track name cannot be empty';
+	IF t_TrackID IS NULL THEN
+    	RAISE EXCEPTION 'Track ID cannot be empty';
 	END IF;
 
 	DELETE FROM Track
-	WHERE TrackName = t_TrackName;
+	WHERE TrackID = t_TrackID;
 END;
 $$;
 
