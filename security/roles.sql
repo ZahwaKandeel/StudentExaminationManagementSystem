@@ -13,7 +13,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM public;
 --=================================================================================
 --  Admin role
 --=================================================================================
-
+REASSIGN OWNED BY Instructor TO postgres;
+DROP OWNED BY Instructor;
 DROP ROLE IF EXISTS adminUser;  
 CREATE ROLE adminUser WITH LOGIN PASSWORD 'Admin1234' SUPERUSER ;
 GRANT ALL PRIVILEGES ON SCHEMA public TO adminUser;
@@ -93,6 +94,8 @@ GRANT EXECUTE ON PROCEDURE Report_StudentExamAnswers TO Instructor;
 --=================================================================================
 --  Student role
 --=================================================================================
+REASSIGN OWNED BY Student TO postgres;
+DROP OWNED BY Student;
 DROP ROLE IF EXISTS Student;
 CREATE ROLE Student WITH LOGIN PASSWORD 'Student1234';
 
