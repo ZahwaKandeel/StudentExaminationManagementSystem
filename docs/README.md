@@ -55,7 +55,8 @@ StudentExaminationManagementSystem/
 │   ├── DBReset.sql                  # ⚠️ Destructive — drops public schema (dev only)
 │   ├── integration_test.sql         # 8-scenario lifecycle test suite
 │   ├── test_reports.sql             # Report procedure test cases
-│   └── Performance.sql              # NFR-01/02: 50-question exam perf test
+│   └── Performance.sql              #  50-question exam perf test
+│   └── test_roles.sql               #  Roles testing
 ├── scripts/
 │   ├── backup.sql                    # pg_dump backup script
 │   ├── restore.sql                   # pg_restore from backup
@@ -118,17 +119,7 @@ psql -d exam_db -f data/performance_seed.sql
 
 ```
 
-### Quick Start (One Command After Schema + Procs)
-
-````bash
-# Seed everything (org, people, questions, students, exams, submissions, run reports)
-psql -d exam_db -f data/sample_data.sql && psql -d exam_db -f data/seed_reports.sql
-
----
-
-## Core Procedures
-
-### Exam Lifecycle
+### Main Procedures
 
 | Procedure           | Signature                                                                                             | Description                                                                                                    |
 | ------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -143,7 +134,7 @@ psql -d exam_db -f data/sample_data.sql && psql -d exam_db -f data/seed_reports.
   { "question_id": 1, "chosen_option_id": 3 },
   { "question_id": 2, "chosen_option_id": 7 }
 ]
-````
+```
 
 ### Example: Full Lifecycle
 
@@ -247,6 +238,9 @@ psql -d exam_db -f tests/test_reports.sql
 
 # Performance test — 50-question exam generation + correction timing
 psql -d exam_db -f tests/Performance.sql
+
+# Roles test
+psql -d exam_db -f tests/test_roles.sql
 
 # ⚠️ WARNING: DBReset.sql drops the entire public schema
 # Only run this on a fresh dev database you can afford to lose
