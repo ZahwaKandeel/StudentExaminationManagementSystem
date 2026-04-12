@@ -98,7 +98,7 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE EXCEPTION 'Error deleting exam: %', SQLERRM;
 END;
-$$
+$$;
 
 
 --=================================================================
