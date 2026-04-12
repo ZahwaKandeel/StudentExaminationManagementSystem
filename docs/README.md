@@ -253,7 +253,6 @@ Three roles are defined in `security/roles.sql`:
 
 Direct table access is revoked for all roles. All interaction must go through stored procedures.
 
-> ⚠️ **Dev-only passwords:** Shared passwords (`Student1234`, `Instructor1234`, `Admin1234`) are fine for development. Replace them with unique credentials before any production use.
 
 ---
 
