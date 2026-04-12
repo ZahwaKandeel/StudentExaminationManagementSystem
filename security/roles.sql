@@ -14,7 +14,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM public;
 --  Admin role
 --=================================================================================
 
-
+DROP ROLE IF EXISTS adminUser;  
 CREATE ROLE adminUser WITH LOGIN PASSWORD 'Admin1234' SUPERUSER ;
 GRANT ALL PRIVILEGES ON SCHEMA public TO adminUser;
 
@@ -22,10 +22,11 @@ GRANT ALL PRIVILEGES ON SCHEMA public TO adminUser;
 --=================================================================================
 --  Instructor role
 --=================================================================================
+DROP ROLE IF EXISTS Instructor;
 CREATE ROLE Instructor WITH LOGIN PASSWORD 'Instructor1234';
 
 -- give the user main functionalities
-GRANT CONNECT ON DATABASE StudentExaminationManagementSystem TO Instructor;
+GRANT CONNECT ON DATABASE exam_db TO Instructor;
 GRANT USAGE ON SCHEMA public TO Instructor;
 
 --====================================================
@@ -73,22 +74,30 @@ GRANT EXECUTE ON PROCEDURE CorrectExam TO Instructor;
 GRANT EXECUTE ON PROCEDURE SetModelAnswer TO Instructor;
 
 --====================================================
---  Grant the ability to generate A InstructorCourses  Report
+--  Grant the ability to generate The InstructorCourses  Report
 --====================================================
 GRANT EXECUTE ON PROCEDURE Report_InstructorCourses TO Instructor;
 
 --====================================================
---  Grant the ability to generate A InstructorCourses  Report
+--  Grant the ability to generate The InstructorCourses  Report
 --====================================================
 GRANT EXECUTE ON PROCEDURE Report_ExamQuestions TO Instructor;
+
+--====================================================
+--  Grant the ability to generate The StudentExamAnswers  Report
+--====================================================
+GRANT EXECUTE ON PROCEDURE Report_StudentExamAnswers TO Instructor;
+
+
 
 --=================================================================================
 --  Student role
 --=================================================================================
+DROP ROLE IF EXISTS Student;
 CREATE ROLE Student WITH LOGIN PASSWORD 'Student1234';
 
 -- give the user main functionalities
-GRANT CONNECT ON DATABASE StudentExaminationManagementSystem TO Student;
+GRANT CONNECT ON DATABASE exam_db TO Student;
 GRANT USAGE ON SCHEMA public TO Student;
 
 -- give the user the access to the procedures available for him

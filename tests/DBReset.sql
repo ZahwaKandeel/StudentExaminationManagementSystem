@@ -2,6 +2,8 @@
 --================================
 -- Drop public schema
 --================================
+
+BEGIN;
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 
