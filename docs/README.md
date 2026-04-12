@@ -286,7 +286,7 @@ psql -d exam_db -f tests/DBReset.sql
 - `CorrectExam` proc + transaction safety
 - `Report_StudentsByDepartment`
 - `Report_ExamQuestions`
-- Integration test suite (8 scenarios) + Performance test
+- Integration test suite (8 scenarios)
 - README + setup guide + call examples
 
 **Developer 2: Ayman Mohamed**
@@ -297,7 +297,7 @@ psql -d exam_db -f tests/DBReset.sql
 - `SubmitExamAnswers` proc + JSONB parsing
 - `Report_StudentGrades` + percentage calculation
 - Role-based security: `roles.sql` (student/instructor/admin roles)
-- Performance validation: NFR-01/02 timing
+- Performance validation: NFR-01/02 timing + Performance test
 - DB dictionary finalise + ERD export PDF
 
 **Developer 3: Mostafa Abd El Kawy**
