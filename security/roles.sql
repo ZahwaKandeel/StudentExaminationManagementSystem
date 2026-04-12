@@ -10,6 +10,11 @@
 
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM public;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM public;
+
+-- Revoke default PUBLIC execute grant on all procedures
+-- so that only explicitly GRANTed roles can call them
+REVOKE EXECUTE ON ALL PROCEDURES IN SCHEMA public FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON PROCEDURES FROM PUBLIC;
 --=================================================================================
 --  Admin role
 --=================================================================================
@@ -120,3 +125,30 @@ GRANT EXECUTE ON PROCEDURE Report_StudentGrades TO Student;
 --  Grant the ability to generate A StudentsByDepartment  Report
 --====================================================
 GRANT EXECUTE ON PROCEDURE Report_StudentsByDepartment TO Student;
+
+
+-- =============================================================
+-- SECURITY DEFINER: All procedures run with owner (postgres)
+-- privileges so they can access tables even when the calling
+-- role has no direct table access.
+-- =============================================================
+
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN
+        SELECT p.proname, n.nspname
+        FROM pg_proc p
+        JOIN pg_namespace n ON p.pronamespace = n.oid
+        WHERE n.nspname = 'public'
+          AND p.prokind = 'p'          -- only procedures
+    LOOP
+        EXECUTE format(
+            'ALTER PROCEDURE %I.%I SECURITY DEFINER',
+            r.nspname, r.proname
+        );
+    END LOOP;
+    RAISE NOTICE 'All procedures set to SECURITY DEFINER.';
+END;
+$$;
