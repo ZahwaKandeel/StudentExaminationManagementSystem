@@ -51,9 +51,8 @@ StudentExaminationManagementSystem/
 │   ├── test_reports.sql             # Report procedure test cases
 │   └── Performance.sql              # NFR-01/02: 50-question exam perf test
 ├── scripts/
-│   ├── backup.sh                    # Timestamped pg_dump backup script
-│   ├── restore.sh                   # Interactive restore from backup
-│   └── README_backup.md             # Backup/restore usage documentation
+│   ├── backup.sql                    # pg_dump backup script
+│   ├── restore.sql                   # pg_restore from backup   
 └── docs/
     ├── README.md                    # This file
     ├── db_dictionary.md             # Column-level documentation for all tables
@@ -105,9 +104,6 @@ psql -d exam_db -f security/roles.sql
 # 7. Load sample seed data
 psql -d exam_db -f data/sample_data.sql
 ```
-
-> **Note:** If database name differs from `exam_db`, update it everywhere
-> including `scripts/backup.sh` and `scripts/restore.sh` (default: `iti_exam`).
 
 ---
 
@@ -203,43 +199,9 @@ CALL Report_StudentExamAnswers(1, 1, 'cur'); -- Student 1's answers for exam 1
 ### Using Scripts (Recommended)
 
 ```bash
-# Create a timestamped backup
-bash scripts/backup.sh
-
-# Restore from a backup (interactive — asks for confirmation)
-bash scripts/restore.sh backups/exam_db_development.sql
+psql -d exam_db -f scripts/backup.sql
+psql -d exam_db -f scripts/restore.sql
 ```
-
-Backup files are saved to `backups/` with timestamps.
-Each run appends to `backups/backup_log.txt`.
-
-> **Note:** Backup scripts default to database name `iti_exam`.
-> Update `DB_NAME` in `scripts/backup.sh` and `scripts/restore.sh`
-> to match your database (`exam_db` or otherwise).
-
-### Manual Commands
-
-```bash
-# Backup
-pg_dump -h localhost -p 5432 -U postgres -d exam_db \
-  --clean --if-exists --no-owner -F p -f backups/manual.sql
-
-# Restore
-psql -h localhost -p 5432 -U postgres -d exam_db \
-  -v ON_ERROR_STOP=1 -f backups/manual.sql
-```
-
-### Fresh Database Restore
-
-```bash
-# Create a blank database
-psql -U postgres -c "CREATE DATABASE exam_db ENCODING 'UTF8' TEMPLATE template0;"
-
-# Restore into it
-psql -U postgres -d exam_db -f backups/exam_db_development.sql
-```
-
----
 
 ## Security
 
@@ -309,7 +271,7 @@ psql -d exam_db -f tests/DBReset.sql
 - Integration test: generate → submit → correct flow
 - `Report_InstructorCourses` + student count
 - `Report_StudentExamAnswers` + model answer hiding (NFR-05)
-- Backup/restore shell scripts + documentation
+- Backup/restore sql scripts + documentation
 - Final merge to main, tag release, LinkedIn post
 
 ---
